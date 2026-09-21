@@ -1,0 +1,679 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dev Matrix — هوية بصرية | دفعة علوم الحاسوب</title>
+  <meta name="description" content="الهوية البصرية لدفعة Dev Matrix — Computer Science. عقول مترابطة، معرفة متطورة، وتقنية تصنع المستقبل." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav class="navbar" id="navbar">
+  <div class="nav-container">
+    <div class="nav-logo">
+      <img src="assets/logo.jpg" alt="Dev Matrix Logo" class="nav-logo-img" />
+      <span class="nav-brand">Dev Matrix</span>
+    </div>
+    <button class="nav-toggle" id="navToggle" aria-label="القائمة">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav-links" id="navLinks">
+      <li><a href="#hero" class="nav-link active">الرئيسية</a></li>
+      <li><a href="#philosophy" class="nav-link">فلسفة الشعار</a></li>
+      <li><a href="#anatomy" class="nav-link">عناصر الشعار</a></li>
+      <li><a href="#colors" class="nav-link">الألوان</a></li>
+      <li><a href="#typography" class="nav-link">الخطوط</a></li>
+      <li><a href="#visual" class="nav-link">الهوية</a></li>
+      <li><a href="#applications" class="nav-link">التطبيقات</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- HERO SECTION -->
+<section class="hero" id="hero">
+  <canvas class="grid-canvas" id="gridCanvas"></canvas>
+  <div class="hero-content">
+    <div class="hero-eyebrow reveal">Brand Identity Presentation</div>
+    <div class="hero-logo-wrap reveal">
+      <div class="logo-glow-ring"></div>
+      <img src="assets/logo.jpg" alt="Dev Matrix Logo" class="hero-logo" />
+    </div>
+    <h1 class="hero-title reveal">DEV MATRIX</h1>
+    <p class="hero-subtitle reveal">COMPUTER SCIENCE</p>
+    <div class="hero-divider reveal"></div>
+    <p class="hero-tagline reveal">عقول مترابطة، معرفة متطورة، وتقنية تصنع المستقبل.</p>
+    <div class="hero-scroll-hint reveal">
+      <span>اكتشف الهوية البصرية</span>
+      <div class="scroll-arrow"></div>
+    </div>
+  </div>
+  <div class="hero-dots">
+    <div class="dot dot-1"></div>
+    <div class="dot dot-2"></div>
+    <div class="dot dot-3"></div>
+  </div>
+</section>
+
+<!-- PHILOSOPHY SECTION -->
+<section class="section philosophy" id="philosophy">
+  <div class="container">
+    <div class="section-label reveal">01 — Philosophy</div>
+    <h2 class="section-title reveal">فلسفة الشعار</h2>
+    <p class="philosophy-text reveal">
+      يجمع الشعار بين الإنسان والمعرفة والتقنية في تكوين هندسي واحد، ليعبّر عن رحلة طالب علوم الحاسوب من التعلم واكتساب المعرفة إلى بناء الحلول التقنية وصناعة المستقبل.
+    </p>
+
+    <div class="philosophy-diagram">
+      <div class="phil-element phil-top reveal">
+        <div class="phil-card">
+          <div class="phil-icon">
+            <svg viewBox="0 0 48 48" fill="none">
+              <circle cx="24" cy="12" r="6" stroke="url(#g1)" stroke-width="2.5"/>
+              <path d="M12 40c0-6.627 5.373-12 12-12s12 5.373 12 12" stroke="url(#g1)" stroke-width="2.5" stroke-linecap="round"/>
+              <defs><linearGradient id="g1" x1="12" y1="6" x2="36" y2="40" gradientUnits="userSpaceOnUse"><stop stop-color="#1565C0"/><stop offset="1" stop-color="#29B6F6"/></linearGradient></defs>
+            </svg>
+          </div>
+          <h3 class="phil-name">الإنسان</h3>
+          <p class="phil-desc">يرمز إلى الطالب والعقل البشري الذي يقود التقنية والابتكار.</p>
+        </div>
+        <div class="connector-v"></div>
+      </div>
+
+      <div class="phil-middle-row">
+        <div class="phil-element phil-left reveal">
+          <div class="phil-card">
+            <div class="phil-icon">
+              <svg viewBox="0 0 48 48" fill="none">
+                <circle cx="8" cy="14" r="3" fill="url(#g2)"/>
+                <circle cx="8" cy="24" r="3" fill="url(#g2)"/>
+                <circle cx="8" cy="34" r="3" fill="url(#g2)"/>
+                <line x1="11" y1="14" x2="40" y2="14" stroke="url(#g2)" stroke-width="2" stroke-linecap="round"/>
+                <line x1="11" y1="24" x2="40" y2="24" stroke="url(#g2)" stroke-width="2" stroke-linecap="round"/>
+                <line x1="11" y1="34" x2="40" y2="34" stroke="url(#g2)" stroke-width="2" stroke-linecap="round"/>
+                <defs><linearGradient id="g2" x1="8" y1="14" x2="40" y2="34" gradientUnits="userSpaceOnUse"><stop stop-color="#1565C0"/><stop offset="1" stop-color="#29B6F6"/></linearGradient></defs>
+              </svg>
+            </div>
+            <h3 class="phil-name">البرمجة والشبكات</h3>
+            <p class="phil-desc">تمثل الخطوط والنقاط البرمجة والبيانات والشبكات الرقمية.</p>
+          </div>
+          <div class="connector-h"></div>
+        </div>
+
+        <div class="phil-logo-center reveal">
+          <div class="phil-logo-ring"></div>
+          <img src="assets/logo.jpg" alt="Dev Matrix Logo" class="phil-logo" />
+        </div>
+
+        <div class="phil-element phil-right reveal">
+          <div class="connector-h connector-h-right"></div>
+          <div class="phil-card">
+            <div class="phil-icon">
+              <svg viewBox="0 0 48 48" fill="none">
+                <path d="M24 4L40 14V34L24 44L8 34V14L24 4Z" stroke="url(#g4)" stroke-width="2.5" stroke-linejoin="round"/>
+                <path d="M24 4L24 44" stroke="url(#g4)" stroke-width="1.5" stroke-dasharray="3 2"/>
+                <defs><linearGradient id="g4" x1="8" y1="4" x2="40" y2="44" gradientUnits="userSpaceOnUse"><stop stop-color="#1565C0"/><stop offset="1" stop-color="#29B6F6"/></linearGradient></defs>
+              </svg>
+            </div>
+            <h3 class="phil-name">المكعب</h3>
+            <p class="phil-desc">يرمز إلى التكامل وترابط علوم الحاسوب وتعدد مجالاته.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="phil-element phil-bottom reveal">
+        <div class="connector-v connector-v-bottom"></div>
+        <div class="phil-card">
+          <div class="phil-icon">
+            <svg viewBox="0 0 48 48" fill="none">
+              <path d="M8 8L16 36L24 20L32 36L40 8" stroke="url(#g3)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+              <defs><linearGradient id="g3" x1="8" y1="8" x2="40" y2="36" gradientUnits="userSpaceOnUse"><stop stop-color="#1565C0"/><stop offset="1" stop-color="#29B6F6"/></linearGradient></defs>
+            </svg>
+          </div>
+          <h3 class="phil-name">المصفوفة M</h3>
+          <p class="phil-desc">ترمز إلى المنطق والتنظيم والأنظمة والمصفوفات.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ANATOMY SECTION -->
+<section class="section anatomy" id="anatomy">
+  <div class="container">
+    <div class="section-label reveal">02 — Anatomy</div>
+    <h2 class="section-title reveal">Anatomy of the Logo</h2>
+    <p class="section-sub reveal">مرّر المؤشر على أجزاء الشعار لاكتشاف كل عنصر</p>
+
+    <div class="anatomy-wrapper reveal">
+      <div class="anatomy-logo-area">
+        <img src="assets/logo.jpg" alt="Dev Matrix Logo" class="anatomy-logo" />
+        <div class="hotspot" style="top:5%;left:50%;transform:translateX(-50%)" data-idx="0">
+          <div class="hotspot-dot"></div>
+          <div class="hotspot-tooltip">
+            <strong>Human</strong>
+            <span>رمز الإنسان — الطالب والعقل البشري</span>
+          </div>
+        </div>
+        <div class="hotspot" style="top:42%;left:22%" data-idx="1">
+          <div class="hotspot-dot"></div>
+          <div class="hotspot-tooltip tooltip-right">
+            <strong>Digital Network</strong>
+            <span>شبكات رقمية — البيانات والبرمجة</span>
+          </div>
+        </div>
+        <div class="hotspot" style="top:38%;left:72%" data-idx="2">
+          <div class="hotspot-dot"></div>
+          <div class="hotspot-tooltip tooltip-left">
+            <strong>Matrix M</strong>
+            <span>حرف M — المصفوفات والمنطق</span>
+          </div>
+        </div>
+        <div class="hotspot" style="top:12%;left:18%" data-idx="3">
+          <div class="hotspot-dot"></div>
+          <div class="hotspot-tooltip tooltip-right">
+            <strong>Cube</strong>
+            <span>مكعب هندسي — التكامل وتعدد المجالات</span>
+          </div>
+        </div>
+        <div class="hotspot" style="top:20%;left:62%" data-idx="4">
+          <div class="hotspot-dot"></div>
+          <div class="hotspot-tooltip tooltip-left">
+            <strong>Gradient</strong>
+            <span>تدرج لوني — النمو والتطور المعرفي</span>
+          </div>
+        </div>
+        <div class="hotspot" style="top:62%;left:50%;transform:translateX(-50%)" data-idx="5">
+          <div class="hotspot-dot"></div>
+          <div class="hotspot-tooltip">
+            <strong>Geometric Structure</strong>
+            <span>هيكل هندسي — الدقة والتنظيم</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="anatomy-legend">
+        <div class="legend-item" data-target="0">
+          <div class="legend-num">01</div>
+          <div><div class="legend-en">Human</div><div class="legend-ar">الإنسان</div></div>
+        </div>
+        <div class="legend-item" data-target="1">
+          <div class="legend-num">02</div>
+          <div><div class="legend-en">Digital Network</div><div class="legend-ar">البرمجة والشبكات</div></div>
+        </div>
+        <div class="legend-item" data-target="2">
+          <div class="legend-num">03</div>
+          <div><div class="legend-en">Matrix M</div><div class="legend-ar">المصفوفة</div></div>
+        </div>
+        <div class="legend-item" data-target="3">
+          <div class="legend-num">04</div>
+          <div><div class="legend-en">Cube</div><div class="legend-ar">المكعب</div></div>
+        </div>
+        <div class="legend-item" data-target="4">
+          <div class="legend-num">05</div>
+          <div><div class="legend-en">Gradient</div><div class="legend-ar">التدرج اللوني</div></div>
+        </div>
+        <div class="legend-item" data-target="5">
+          <div class="legend-num">06</div>
+          <div><div class="legend-en">Geometric Structure</div><div class="legend-ar">الهيكل الهندسي</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- COLORS SECTION -->
+<section class="section colors-section" id="colors">
+  <div class="container">
+    <div class="section-label reveal">03 — Colors</div>
+    <h2 class="section-title reveal">ألوان الهوية</h2>
+    <p class="section-sub reveal">الألوان المستخرجة من الشعار وقيمها الدقيقة</p>
+
+    <div class="colors-grid reveal">
+      <div class="color-card" data-hex="#0D2B8E">
+        <div class="color-swatch" style="background:#0D2B8E;">
+          <div class="color-overlay">
+            <button class="copy-btn" id="copy1">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              نسخ
+            </button>
+          </div>
+        </div>
+        <div class="color-info">
+          <div class="color-name">Deep Blue</div>
+          <div class="color-role">اللون الأساسي الداكن</div>
+          <div class="color-hex">#0D2B8E</div>
+        </div>
+      </div>
+
+      <div class="color-card" data-hex="#1565C0">
+        <div class="color-swatch" style="background:#1565C0;">
+          <div class="color-overlay">
+            <button class="copy-btn" id="copy2">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              نسخ
+            </button>
+          </div>
+        </div>
+        <div class="color-info">
+          <div class="color-name">Primary Blue</div>
+          <div class="color-role">اللون الرئيسي</div>
+          <div class="color-hex">#1565C0</div>
+        </div>
+      </div>
+
+      <div class="color-card" data-hex="#1E88E5">
+        <div class="color-swatch" style="background:#1E88E5;">
+          <div class="color-overlay">
+            <button class="copy-btn" id="copy3">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              نسخ
+            </button>
+          </div>
+        </div>
+        <div class="color-info">
+          <div class="color-name">Sky Blue</div>
+          <div class="color-role">اللون التكميلي</div>
+          <div class="color-hex">#1E88E5</div>
+        </div>
+      </div>
+
+      <div class="color-card" data-hex="#29B6F6">
+        <div class="color-swatch" style="background:#29B6F6;">
+          <div class="color-overlay">
+            <button class="copy-btn" id="copy4">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              نسخ
+            </button>
+          </div>
+        </div>
+        <div class="color-info">
+          <div class="color-name">Light Blue</div>
+          <div class="color-role">لون التمييز والتأكيد</div>
+          <div class="color-hex">#29B6F6</div>
+        </div>
+      </div>
+
+      <div class="color-card" data-hex="#FFFFFF">
+        <div class="color-swatch" style="background:#FFFFFF;border:1.5px solid #E8EDF5;">
+          <div class="color-overlay" style="background:rgba(0,0,0,0.04);">
+            <button class="copy-btn" style="color:#1565C0;border-color:#1565C0;" id="copy5">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              نسخ
+            </button>
+          </div>
+        </div>
+        <div class="color-info">
+          <div class="color-name">White</div>
+          <div class="color-role">الخلفية والمساحة البيضاء</div>
+          <div class="color-hex">#FFFFFF</div>
+        </div>
+      </div>
+
+      <div class="color-card" data-hex="#F5F7FB">
+        <div class="color-swatch" style="background:#F5F7FB;border:1.5px solid #E8EDF5;">
+          <div class="color-overlay" style="background:rgba(0,0,0,0.03);">
+            <button class="copy-btn" style="color:#1565C0;border-color:#1565C0;" id="copy6">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+              نسخ
+            </button>
+          </div>
+        </div>
+        <div class="color-info">
+          <div class="color-name">Off-White</div>
+          <div class="color-role">الخلفية الثانوية</div>
+          <div class="color-hex">#F5F7FB</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="color-bar reveal">
+      <div class="color-bar-seg" style="background:#0D2B8E;flex:1.5"></div>
+      <div class="color-bar-seg" style="background:#1565C0;flex:2"></div>
+      <div class="color-bar-seg" style="background:#1E88E5;flex:2"></div>
+      <div class="color-bar-seg" style="background:#29B6F6;flex:1.5"></div>
+      <div class="color-bar-seg" style="background:#FFFFFF;flex:1;border:1px solid #E8EDF5"></div>
+    </div>
+  </div>
+</section>
+
+<!-- TYPOGRAPHY SECTION -->
+<section class="section typography-section" id="typography">
+  <div class="container">
+    <div class="section-label reveal">04 — Typography</div>
+    <h2 class="section-title reveal">الخطوط</h2>
+
+    <div class="typo-grid">
+      <div class="typo-card primary reveal">
+        <div class="typo-tag">الخط الأساسي — Latin</div>
+        <div class="typo-font-name">Space Grotesk</div>
+        <div class="typo-sample-en">DEV MATRIX</div>
+        <div class="typo-sample-en-sub">COMPUTER SCIENCE</div>
+        <div class="typo-weights">
+          <span style="font-weight:400">Regular</span>
+          <span style="font-weight:600">SemiBold</span>
+          <span style="font-weight:700">Bold</span>
+        </div>
+        <div class="typo-alphabet">A B C D E F G H I J K L M N O P Q R S T U V W X Y Z<br/>0 1 2 3 4 5 6 7 8 9</div>
+      </div>
+
+      <div class="typo-card arabic reveal">
+        <div class="typo-tag">الخط العربي</div>
+        <div class="typo-font-name" style="font-family:'IBM Plex Sans Arabic'">IBM Plex Sans Arabic</div>
+        <div class="typo-sample-ar">ديف ماتريكس</div>
+        <div class="typo-sample-ar-sub">علوم الحاسوب</div>
+        <div class="typo-weights" style="font-family:'IBM Plex Sans Arabic'">
+          <span style="font-weight:300">خفيف</span>
+          <span style="font-weight:400">عادي</span>
+          <span style="font-weight:600">شبه عريض</span>
+          <span style="font-weight:700">عريض</span>
+        </div>
+        <div class="typo-alphabet" style="font-family:'IBM Plex Sans Arabic'">
+          عقول مترابطة، معرفة متطورة، وتقنية تصنع المستقبل.
+        </div>
+      </div>
+    </div>
+
+    <div class="typo-scale reveal">
+      <div class="scale-row">
+        <span class="scale-label">H1</span>
+        <span class="scale-sample" style="font-size:2.8rem;font-weight:700;font-family:'Space Grotesk'">DEV MATRIX</span>
+      </div>
+      <div class="scale-row">
+        <span class="scale-label">H2</span>
+        <span class="scale-sample" style="font-size:1.8rem;font-weight:600;font-family:'Space Grotesk'">Computer Science</span>
+      </div>
+      <div class="scale-row">
+        <span class="scale-label">H3</span>
+        <span class="scale-sample" style="font-size:1.3rem;font-weight:500;font-family:'IBM Plex Sans Arabic'">هوية بصرية احترافية</span>
+      </div>
+      <div class="scale-row">
+        <span class="scale-label">Body</span>
+        <span class="scale-sample" style="font-size:1rem;font-weight:400;font-family:'IBM Plex Sans Arabic'">عقول مترابطة، معرفة متطورة، وتقنية تصنع المستقبل.</span>
+      </div>
+      <div class="scale-row">
+        <span class="scale-label">Caption</span>
+        <span class="scale-sample" style="font-size:0.78rem;font-weight:300;font-family:'Space Grotesk';letter-spacing:0.18em">BRAND IDENTITY · 2024</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VISUAL STYLE SECTION -->
+<section class="section visual-section" id="visual">
+  <div class="container">
+    <div class="section-label reveal">05 — Visual Style</div>
+    <h2 class="section-title reveal">أسلوب الهوية</h2>
+    <p class="section-sub reveal">أمثلة على استخدام الهوية البصرية في سياقات مختلفة</p>
+
+    <div class="visual-grid">
+      <div class="visual-card reveal" style="background:#FFFFFF;border:1.5px solid #E8EDF5;">
+        <div class="visual-card-tag">White Background</div>
+        <img src="assets/logo.jpg" alt="Dev Matrix Logo" class="visual-logo" />
+        <div class="visual-card-text" style="color:#1565C0;">DEV MATRIX</div>
+        <div class="visual-card-sub" style="color:#1E88E5;">COMPUTER SCIENCE</div>
+      </div>
+
+      <div class="visual-card reveal" style="background:linear-gradient(135deg,#0D2B8E 0%,#1565C0 100%);">
+        <div class="visual-card-tag" style="color:rgba(255,255,255,0.6)">Dark Blue Background</div>
+        <img src="assets/logo.jpg" alt="Dev Matrix Logo" class="visual-logo" style="filter:brightness(0) invert(1) opacity(0.9);" />
+        <div class="visual-card-text" style="color:#fff;">DEV MATRIX</div>
+        <div class="visual-card-sub" style="color:#29B6F6;">COMPUTER SCIENCE</div>
+      </div>
+
+      <div class="visual-card reveal" style="background:linear-gradient(135deg,#e8f0fe 0%,#dbeafe 100%);">
+        <div class="visual-card-tag">Glass Card</div>
+        <div class="glass-inner">
+          <img src="assets/logo.jpg" alt="Dev Matrix Logo" class="visual-logo" style="width:65px;height:65px;margin:0;" />
+          <div>
+            <div class="visual-card-text" style="color:#1565C0;font-size:1rem;margin:0;">DEV MATRIX</div>
+            <div class="visual-card-sub" style="color:#1E88E5;margin:0;">COMPUTER SCIENCE</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="visual-card reveal" style="background:#071020;">
+        <div class="visual-card-tag" style="color:rgba(255,255,255,0.4)">Dark Card</div>
+        <img src="assets/logo.jpg" alt="Dev Matrix Logo" class="visual-logo" style="filter:brightness(0) invert(1) opacity(0.85);" />
+        <div class="visual-card-text" style="color:#fff;">DEV MATRIX</div>
+        <div class="visual-card-sub" style="color:#29B6F6;">COMPUTER SCIENCE</div>
+      </div>
+
+      <div class="visual-card reveal pattern-card-vis">
+        <div class="visual-card-tag">DM Pattern</div>
+        <canvas class="mini-pattern" id="miniPattern"></canvas>
+        <div class="visual-card-text" style="color:#1565C0;">DM Pattern</div>
+      </div>
+
+      <div class="visual-card reveal" style="background:#F5F7FB;">
+        <div class="visual-card-tag">Geometric Lines</div>
+        <svg viewBox="0 0 260 180" fill="none" style="width:100%;max-width:240px;margin:auto;">
+          <line x1="0" y1="90" x2="260" y2="90" stroke="#1565C0" stroke-width="0.7" stroke-dasharray="7 4"/>
+          <line x1="130" y1="0" x2="130" y2="180" stroke="#1565C0" stroke-width="0.7" stroke-dasharray="7 4"/>
+          <polygon points="130,18 218,72 218,126 130,162 42,126 42,72" stroke="#1E88E5" stroke-width="1" fill="none"/>
+          <polygon points="130,44 196,82 196,116 130,148 64,116 64,82" stroke="#29B6F6" stroke-width="0.7" fill="none" opacity="0.6"/>
+          <circle cx="130" cy="90" r="28" stroke="#1565C0" stroke-width="1" fill="none"/>
+          <circle cx="130" cy="90" r="46" stroke="#1E88E5" stroke-width="0.5" fill="none" opacity="0.35"/>
+          <text x="130" y="95" text-anchor="middle" font-family="Space Grotesk,sans-serif" font-size="13" font-weight="700" fill="#1565C0">DM</text>
+        </svg>
+        <div class="visual-card-text" style="color:#1565C0;">Geometric Style</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PATTERN SECTION -->
+<section class="section pattern-section" id="pattern">
+  <div class="container">
+    <div class="section-label reveal">06 — Pattern</div>
+    <h2 class="section-title reveal">نمط الهوية</h2>
+    <p class="section-sub reveal">نمط متكرر مستوحى من رمز الشعار DM — يُستخدم كخلفية للهوية</p>
+    <div class="pattern-canvas-wrap reveal">
+      <canvas id="dmPatternCanvas"></canvas>
+      <div class="pattern-overlay-text">
+        <div class="pot-main">DM Pattern — Dev Matrix</div>
+        <div class="pot-sub">COMPUTER SCIENCE</div>
+      </div>
+    </div>
+    <div class="pattern-variants reveal">
+      <div class="pattern-var dark-pattern">
+        <canvas class="pv-canvas" id="pvDark"></canvas>
+        <div class="pv-label">Dark Version</div>
+      </div>
+      <div class="pattern-var light-pattern">
+        <canvas class="pv-canvas" id="pvLight"></canvas>
+        <div class="pv-label" style="color:#1565C0">Light Version</div>
+      </div>
+      <div class="pattern-var mid-pattern">
+        <canvas class="pv-canvas" id="pvMid"></canvas>
+        <div class="pv-label">Blue Version</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- APPLICATIONS SECTION -->
+<section class="section applications-section" id="applications">
+  <div class="container">
+    <div class="section-label reveal">07 — Applications</div>
+    <h2 class="section-title reveal">تطبيقات الهوية</h2>
+    <p class="section-sub reveal">كيف يظهر الشعار في الحياة الواقعية</p>
+
+    <div class="apps-grid">
+      <!-- Student Card -->
+      <div class="app-mockup reveal">
+        <div class="mock-label">بطاقة الطالب</div>
+        <div class="student-card">
+          <div class="sc-header">
+            <img src="assets/logo.jpg" alt="logo" class="sc-logo"/>
+            <div>
+              <div class="sc-brand">DEV MATRIX</div>
+              <div class="sc-dept">COMPUTER SCIENCE</div>
+            </div>
+          </div>
+          <div class="sc-body">
+            <div class="sc-avatar">
+              <svg viewBox="0 0 48 48" fill="none"><circle cx="24" cy="16" r="8" stroke="#fff" stroke-width="2"/><path d="M8 40c0-8.837 7.163-16 16-16s16 7.163 16 16" stroke="#fff" stroke-width="2" stroke-linecap="round"/></svg>
+            </div>
+            <div class="sc-info">
+              <div class="sc-name">اسم الطالب</div>
+              <div class="sc-id">CS-2024-001</div>
+              <div class="sc-major">علوم الحاسوب</div>
+            </div>
+          </div>
+          <div class="sc-footer">
+            <div class="sc-barcode"><div class="barcode-lines"></div></div>
+            <div class="sc-cohort">Cohort 2024</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Certificate -->
+      <div class="app-mockup reveal">
+        <div class="mock-label">شهادة التخرج</div>
+        <div class="cert-card">
+          <div class="cert-border"></div>
+          <img src="assets/logo.jpg" alt="logo" class="cert-logo"/>
+          <div class="cert-title">شهادة تخرج</div>
+          <div class="cert-body">تُمنح هذه الشهادة تقديرًا للجهود المبذولة وإتمام متطلبات دفعة</div>
+          <div class="cert-name">Dev Matrix — COMPUTER SCIENCE</div>
+          <div class="cert-year">2024</div>
+          <div class="cert-line"></div>
+          <div class="cert-sig">التوقيع</div>
+        </div>
+      </div>
+
+      <!-- T-Shirt -->
+      <div class="app-mockup reveal">
+        <div class="mock-label">تيشيرت الدفعة</div>
+        <div class="tshirt-mock">
+          <div class="tshirt-shape">
+            <svg viewBox="0 0 200 220" fill="none" class="tshirt-svg">
+              <path d="M50 20L20 60L50 70L50 190L150 190L150 70L180 60L150 20L120 40C114 50 100 54 100 54C100 54 86 50 80 40L50 20Z" fill="#1565C0" stroke="#0D2B8E" stroke-width="1.5"/>
+            </svg>
+            <div class="tshirt-content">
+              <img src="assets/logo.jpg" alt="logo" class="tshirt-logo"/>
+              <div class="tshirt-text">DEV MATRIX</div>
+              <div class="tshirt-sub">CS · 2024</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Jacket -->
+      <div class="app-mockup reveal">
+        <div class="mock-label">سترة الدفعة</div>
+        <div class="jacket-mock">
+          <svg class="jacket-svg" viewBox="0 0 220 240" fill="none">
+            <path d="M60 20L20 70L55 85L55 210L165 210L165 85L200 70L160 20L130 45C122 58 110 62 110 62C110 62 98 58 90 45L60 20Z" fill="#0D2B8E"/>
+            <path d="M60 20L40 30L20 70L55 85L55 210" stroke="#1565C0" stroke-width="1" fill="none"/>
+            <path d="M160 20L180 30L200 70L165 85L165 210" stroke="#1565C0" stroke-width="1" fill="none"/>
+            <path d="M60 20L20 70L55 85" fill="#1565C0" opacity="0.5"/>
+            <path d="M160 20L200 70L165 85" fill="#1565C0" opacity="0.5"/>
+          </svg>
+          <div class="jacket-content">
+            <img src="assets/logo.jpg" alt="logo" class="jacket-logo"/>
+            <div class="jacket-text">DEV MATRIX</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Business Card -->
+      <div class="app-mockup reveal">
+        <div class="mock-label">بطاقة تعريف</div>
+        <div class="biz-card">
+          <div class="biz-accent"></div>
+          <img src="assets/logo.jpg" alt="logo" class="biz-logo"/>
+          <div class="biz-name">اسم الطالب</div>
+          <div class="biz-title-text">Computer Science</div>
+          <div class="biz-details">Dev Matrix · 2024</div>
+          <div class="biz-contact">
+            <span>dev.matrix@cs.edu</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Social Post -->
+      <div class="app-mockup reveal">
+        <div class="mock-label">منشور Social Media</div>
+        <div class="social-post">
+          <div class="sp-bg"></div>
+          <div class="sp-content">
+            <img src="assets/logo.jpg" alt="logo" class="sp-logo"/>
+            <div class="sp-title">DEV MATRIX</div>
+            <div class="sp-sub">COMPUTER SCIENCE · 2024</div>
+            <div class="sp-quote">"عقول مترابطة، وتقنية تصنع المستقبل."</div>
+            <div class="sp-tags">#DevMatrix #CS2024 #ComputerScience</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Phone Wallpaper -->
+      <div class="app-mockup reveal">
+        <div class="mock-label">خلفية الهاتف</div>
+        <div class="phone-mock">
+          <div class="phone-frame">
+            <div class="phone-notch"></div>
+            <div class="phone-screen">
+              <div class="phone-wallpaper">
+                <div class="pw-grid-bg"></div>
+                <img src="assets/logo.jpg" alt="logo" class="pw-logo"/>
+                <div class="pw-brand">DEV MATRIX</div>
+                <div class="pw-sub">COMPUTER SCIENCE</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Laptop Wallpaper -->
+      <div class="app-mockup reveal">
+        <div class="mock-label">خلفية اللابتوب</div>
+        <div class="laptop-mock">
+          <div class="laptop-screen">
+            <div class="laptop-wallpaper">
+              <div class="lw-grid-bg"></div>
+              <img src="assets/logo.jpg" alt="logo" class="lw-logo"/>
+              <div class="lw-brand">DEV MATRIX</div>
+              <div class="lw-sub">COMPUTER SCIENCE</div>
+            </div>
+          </div>
+          <div class="laptop-base"></div>
+          <div class="laptop-hinge"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer class="footer-section" id="footer">
+  <div class="footer-grid-bg"></div>
+  <div class="container footer-content">
+    <div class="footer-logo-wrap">
+      <div class="footer-glow"></div>
+      <img src="assets/logo.jpg" alt="Dev Matrix Logo" class="footer-logo" />
+    </div>
+    <h2 class="footer-title">DEV MATRIX</h2>
+    <p class="footer-subtitle">COMPUTER SCIENCE</p>
+    <div class="footer-divider"></div>
+    <p class="footer-tagline">من المعرفة إلى الابتكار.</p>
+    <p class="footer-cohort">Computer Science Cohort</p>
+    <div class="footer-line"></div>
+    <div class="footer-bottom">
+      <span>Brand Identity — Dev Matrix</span>
+      <span>COMPUTER SCIENCE · 2024</span>
+    </div>
+  </div>
+</footer>
+
+<!-- Toast notification -->
+<div class="toast" id="toast">تم نسخ الكود!</div>
+
+<script src="script.js"></script>
+</body>
+</html>
