@@ -30,6 +30,9 @@
       <li><a href="#typography" class="nav-link">الخطوط</a></li>
       <li><a href="#visual" class="nav-link">الهوية</a></li>
       <li><a href="#applications" class="nav-link">التطبيقات</a></li>
+      <li><a href="#challenges" class="nav-link">Challenges</a></li>
+      <li><a href="#quiz" class="nav-link">Quiz</a></li>
+      <li><a href="#matrix-game" class="nav-link">Games</a></li>
     </ul>
   </div>
 </nav>
@@ -646,6 +649,455 @@
           <div class="laptop-hinge"></div>
         </div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================================================================
+     NEW SECTIONS — DEV MATRIX INTERACTIVE
+================================================================ -->
+
+<!-- 1. DEV MATRIX CHALLENGES -->
+<section class="section challenges-section" id="challenges">
+  <div class="container">
+    <div class="section-label reveal">08 — Challenges</div>
+    <h2 class="section-title reveal">Dev Matrix Challenges</h2>
+    <p class="section-sub reveal">اختبر مهاراتك في علوم الحاسوب وتحدَّ نفسك.</p>
+    <div class="challenges-grid">
+
+      <div class="challenge-card reveal" data-challenge="algorithms">
+        <div class="challenge-icon">🧠</div>
+        <div class="challenge-badge badge-hard">Hard</div>
+        <h3 class="challenge-name">تحدي الخوارزميات</h3>
+        <p class="challenge-desc">اختبر معرفتك بتحليل الخوارزميات وتقييم التعقيد الزمني والمكاني.</p>
+        <div class="challenge-meta"><span class="diff-dot diff-hard"></span>مستوى صعب</div>
+        <button class="btn-challenge" onclick="openChallenge('algorithms')">ابدأ التحدي</button>
+      </div>
+
+      <div class="challenge-card reveal" data-challenge="coding">
+        <div class="challenge-icon">💻</div>
+        <div class="challenge-badge badge-medium">Medium</div>
+        <h3 class="challenge-name">تحدي البرمجة</h3>
+        <p class="challenge-desc">حل مشكلات برمجية عملية واختبر قدرتك على التفكير المنطقي.</p>
+        <div class="challenge-meta"><span class="diff-dot diff-medium"></span>مستوى متوسط</div>
+        <button class="btn-challenge" onclick="openChallenge('coding')">ابدأ التحدي</button>
+      </div>
+
+      <div class="challenge-card reveal" data-challenge="debug">
+        <div class="challenge-icon">🔍</div>
+        <div class="challenge-badge badge-medium">Medium</div>
+        <h3 class="challenge-name">اكتشف الخطأ</h3>
+        <p class="challenge-desc">ابحث عن الأخطاء البرمجية في مقاطع كود حقيقية وصحّحها.</p>
+        <div class="challenge-meta"><span class="diff-dot diff-medium"></span>مستوى متوسط</div>
+        <button class="btn-challenge" onclick="openChallenge('debug')">ابدأ التحدي</button>
+      </div>
+
+      <div class="challenge-card reveal" data-challenge="logic">
+        <div class="challenge-icon">🧩</div>
+        <div class="challenge-badge badge-easy">Easy</div>
+        <h3 class="challenge-name">تحدي المنطق</h3>
+        <p class="challenge-desc">حل ألغاز منطقية مستوحاة من مفاهيم علوم الحاسوب والرياضيات.</p>
+        <div class="challenge-meta"><span class="diff-dot diff-easy"></span>مستوى سهل</div>
+        <button class="btn-challenge" onclick="openChallenge('logic')">ابدأ التحدي</button>
+      </div>
+
+      <div class="challenge-card reveal" data-challenge="speed">
+        <div class="challenge-icon">⚡</div>
+        <div class="challenge-badge badge-hard">Hard</div>
+        <h3 class="challenge-name">تحدي السرعة</h3>
+        <p class="challenge-desc">أجب عن أكبر عدد من الأسئلة في أقل وقت ممكن. السرعة والدقة معاً!</p>
+        <div class="challenge-meta"><span class="diff-dot diff-hard"></span>مستوى صعب</div>
+        <button class="btn-challenge" onclick="openChallenge('speed')">ابدأ التحدي</button>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- Challenge Modal -->
+<div class="modal-overlay" id="challengeModal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeChallenge()">✕</button>
+    <div id="challengeContent"></div>
+  </div>
+</div>
+
+<!-- 2. COMPUTER SCIENCE QUIZ -->
+<section class="section quiz-section" id="quiz">
+  <div class="container">
+    <div class="section-label reveal">09 — Quiz</div>
+    <h2 class="section-title reveal">Computer Science Quiz</h2>
+    <p class="section-sub reveal">اختبر معلوماتك في مختلف مجالات علوم الحاسوب.</p>
+    <div class="quiz-wrapper reveal">
+      <div class="quiz-categories">
+        <button class="quiz-cat-btn active" data-cat="all">All Topics</button>
+        <button class="quiz-cat-btn" data-cat="programming">Programming</button>
+        <button class="quiz-cat-btn" data-cat="algorithms">Algorithms</button>
+        <button class="quiz-cat-btn" data-cat="databases">Databases</button>
+        <button class="quiz-cat-btn" data-cat="networks">Networks</button>
+        <button class="quiz-cat-btn" data-cat="cybersecurity">Cyber Security</button>
+        <button class="quiz-cat-btn" data-cat="ai">Artificial Intelligence</button>
+        <button class="quiz-cat-btn" data-cat="web">Web Development</button>
+      </div>
+      <div class="quiz-box" id="quizBox">
+        <div class="quiz-start-screen" id="quizStart">
+          <div class="quiz-start-icon">🎓</div>
+          <h3>جاهز لاختبار معلوماتك؟</h3>
+          <p>10 أسئلة في علوم الحاسوب — اختر الموضوع ثم ابدأ!</p>
+          <button class="btn-primary-dm" id="startQuizBtn">ابدأ الاختبار</button>
+        </div>
+        <div class="quiz-play-screen hidden" id="quizPlay">
+          <div class="quiz-header">
+            <div class="quiz-progress-wrap">
+              <div class="quiz-progress-bar"><div class="quiz-progress-fill" id="quizProgressFill"></div></div>
+              <span class="quiz-progress-text" id="quizProgressText">1 / 10</span>
+            </div>
+            <div class="quiz-score-live">النقاط: <span id="quizScoreLive">0</span></div>
+          </div>
+          <div class="quiz-category-tag" id="quizCatTag"></div>
+          <div class="quiz-question" id="quizQuestion"></div>
+          <div class="quiz-options" id="quizOptions"></div>
+          <div class="quiz-feedback hidden" id="quizFeedback"></div>
+          <button class="btn-primary-dm hidden" id="quizNextBtn">التالي →</button>
+        </div>
+        <div class="quiz-result-screen hidden" id="quizResult">
+          <div class="result-icon" id="resultIcon">🎉</div>
+          <h3 class="result-title">Your Score</h3>
+          <div class="result-score" id="resultScore"></div>
+          <div class="result-label" id="resultLabel"></div>
+          <button class="btn-primary-dm" id="quizRetryBtn">إعادة الاختبار</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 3. CODE CHALLENGE -->
+<section class="section code-challenge-section" id="code-challenge">
+  <div class="container">
+    <div class="section-label reveal">10 — Code Challenge</div>
+    <h2 class="section-title reveal">Code Challenge</h2>
+    <p class="section-sub reveal">انظر إلى الكود وتوقّع الناتج الصحيح.</p>
+    <div class="code-challenge-wrapper reveal">
+      <div class="code-challenge-box" id="codeChallengeBox">
+        <div class="cc-start" id="ccStart">
+          <div class="cc-start-icon">⌨️</div>
+          <h3>What will be the output?</h3>
+          <p>تحديات برمجية بمستويات مختلفة. هل أنت مستعد؟</p>
+          <button class="btn-primary-dm" id="startCCBtn">ابدأ التحدي</button>
+        </div>
+        <div class="cc-play hidden" id="ccPlay">
+          <div class="cc-header">
+            <span class="cc-progress" id="ccProgress">1 / 8</span>
+            <span class="cc-score">النقاط: <strong id="ccScore">0</strong></span>
+          </div>
+          <div class="cc-lang-badge" id="ccLang"></div>
+          <pre class="cc-code" id="ccCode"></pre>
+          <p class="cc-question">What will be the output?</p>
+          <div class="cc-options" id="ccOptions"></div>
+          <div class="cc-feedback hidden" id="ccFeedback"></div>
+          <button class="btn-primary-dm hidden" id="ccNextBtn">التالي →</button>
+        </div>
+        <div class="cc-result hidden" id="ccResult">
+          <div class="cc-result-icon">🏆</div>
+          <h3>النتيجة النهائية</h3>
+          <div class="cc-result-score" id="ccResultScore"></div>
+          <div class="cc-result-label" id="ccResultLabel"></div>
+          <button class="btn-primary-dm" id="ccRetryBtn">حاول مجدداً</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 4. GUESS THE TECHNOLOGY -->
+<section class="section guess-tech-section" id="guess-tech">
+  <div class="container">
+    <div class="section-label reveal">11 — Guess Tech</div>
+    <h2 class="section-title reveal">Guess the Technology</h2>
+    <p class="section-sub reveal">اقرأ الوصف وخمّن التقنية الصحيحة.</p>
+    <div class="guess-tech-wrapper reveal">
+      <div class="guess-tech-box" id="guessTechBox">
+        <div class="gt-start" id="gtStart">
+          <div class="gt-start-icon">🤔</div>
+          <h3>Who Am I?</h3>
+          <p>وصف تقنية — خمّن اسمها الصحيح!</p>
+          <button class="btn-primary-dm" id="startGTBtn">ابدأ التخمين</button>
+        </div>
+        <div class="gt-play hidden" id="gtPlay">
+          <div class="gt-header">
+            <span class="gt-progress" id="gtProgress">1 / 8</span>
+            <span class="gt-score">النقاط: <strong id="gtScore">0</strong></span>
+          </div>
+          <div class="gt-clue-box">
+            <div class="gt-clue-label">Who Am I?</div>
+            <div class="gt-clue" id="gtClue"></div>
+          </div>
+          <div class="gt-options" id="gtOptions"></div>
+          <div class="gt-feedback hidden" id="gtFeedback"></div>
+          <button class="btn-primary-dm hidden" id="gtNextBtn">التالي →</button>
+        </div>
+        <div class="gt-result hidden" id="gtResult">
+          <div class="gt-result-icon">🌐</div>
+          <h3>انتهت الجولة!</h3>
+          <div class="gt-result-score" id="gtResultScore"></div>
+          <div class="gt-result-label" id="gtResultLabel"></div>
+          <button class="btn-primary-dm" id="gtRetryBtn">جولة جديدة</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 5. MATRIX GAME -->
+<section class="section matrix-game-section" id="matrix-game">
+  <div class="container">
+    <div class="section-label reveal">12 — Matrix Game</div>
+    <h2 class="section-title reveal">Matrix Game</h2>
+    <p class="section-sub reveal">ابحث عن الرمز المطلوب داخل المصفوفة قبل انتهاء الوقت!</p>
+    <div class="matrix-game-wrapper reveal">
+      <div class="mg-controls">
+        <div class="mg-target-box">
+          <span class="mg-target-label">Find:</span>
+          <span class="mg-target-value" id="mgTarget">—</span>
+        </div>
+        <div class="mg-stats">
+          <div class="mg-stat"><span class="mg-stat-icon">⏱</span><span id="mgTimer">30</span>s</div>
+          <div class="mg-stat"><span class="mg-stat-icon">⭐</span><span id="mgScore">0</span></div>
+          <div class="mg-stat"><span class="mg-stat-icon">📈</span>Level <span id="mgLevel">1</span></div>
+        </div>
+        <button class="btn-primary-dm" id="mgStartBtn">▶ Play</button>
+      </div>
+      <div class="mg-grid" id="mgGrid"></div>
+      <div class="mg-result hidden" id="mgResult">
+        <div class="mg-result-icon">🎮</div>
+        <div class="mg-result-score-label">Score: <span id="mgFinalScore">0</span></div>
+        <div class="mg-result-time-label">Time: <span id="mgFinalTime">0</span>s</div>
+        <button class="btn-primary-dm" id="mgPlayAgain">Play Again</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 6. TECH MEMORY -->
+<section class="section tech-memory-section" id="tech-memory">
+  <div class="container">
+    <div class="section-label reveal">13 — Memory</div>
+    <h2 class="section-title reveal">Tech Memory</h2>
+    <p class="section-sub reveal">طابق البطاقات المتشابهة في أقل عدد من المحاولات.</p>
+    <div class="tech-memory-wrapper reveal">
+      <div class="tm-stats">
+        <div class="tm-stat">المحاولات: <strong id="tmAttempts">0</strong></div>
+        <div class="tm-stat">الأزواج: <strong id="tmPairs">0</strong> / 8</div>
+        <div class="tm-stat">الوقت: <strong id="tmTime">0</strong>s</div>
+        <button class="btn-primary-dm" id="tmRestartBtn">إعادة اللعبة</button>
+      </div>
+      <div class="tm-board" id="tmBoard"></div>
+    </div>
+  </div>
+</section>
+
+<!-- 7. DEV MATRIX FACTS -->
+<section class="section facts-section" id="dm-facts">
+  <div class="container">
+    <div class="section-label reveal">14 — Facts</div>
+    <h2 class="section-title reveal">Dev Matrix Facts</h2>
+    <p class="section-sub reveal">معلومات قصيرة وممتعة عن عالم الحاسوب والتقنية.</p>
+    <div class="facts-wrapper reveal">
+      <div class="facts-card">
+        <div class="facts-badge">Did You Know?</div>
+        <div class="facts-icon" id="factsIcon">💡</div>
+        <blockquote class="facts-text" id="factsText"></blockquote>
+        <div class="facts-source" id="factsSource"></div>
+        <div class="facts-nav">
+          <button class="btn-facts-nav" id="factsPrevBtn">← السابق</button>
+          <div class="facts-dots" id="factsDots"></div>
+          <button class="btn-facts-nav" id="factsNextBtn">التالي →</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 8. TECH TIMELINE -->
+<section class="section timeline-section" id="tech-timeline">
+  <div class="container">
+    <div class="section-label reveal">15 — Timeline</div>
+    <h2 class="section-title reveal">Tech Timeline</h2>
+    <p class="section-sub reveal">رحلة تطور التقنية عبر العقود — اضغط على أي مرحلة لمعرفة التفاصيل.</p>
+    <div class="timeline-wrapper reveal">
+      <div class="timeline-track" id="timelineTrack">
+
+        <div class="tl-item" data-era="1940s">
+          <div class="tl-node"><div class="tl-dot"></div></div>
+          <div class="tl-label">1940s</div>
+          <div class="tl-title">Early Computers</div>
+          <div class="tl-detail">
+            <h4>الحواسيب الأولى — 1940s</h4>
+            <p>بُني أول حاسوب إلكتروني ENIAC عام 1945، كان يشغل غرفة كاملة ويستهلك طاقة هائلة. بدأ عصر الحوسبة الرقمية.</p>
+          </div>
+        </div>
+
+        <div class="tl-item" data-era="1970s">
+          <div class="tl-node"><div class="tl-dot"></div></div>
+          <div class="tl-label">1970s</div>
+          <div class="tl-title">Microprocessors</div>
+          <div class="tl-detail">
+            <h4>المعالجات الدقيقة — 1970s</h4>
+            <p>أطلقت Intel معالج 4004 عام 1971، أول معالج دقيق تجاري. غيّر هذا الاختراع مفهوم الحوسبة إلى الأبد.</p>
+          </div>
+        </div>
+
+        <div class="tl-item" data-era="1980s">
+          <div class="tl-node"><div class="tl-dot"></div></div>
+          <div class="tl-label">1980s</div>
+          <div class="tl-title">Personal Computers</div>
+          <div class="tl-detail">
+            <h4>الحواسيب الشخصية — 1980s</h4>
+            <p>أطلق IBM الـ PC عام 1981 وأطلقت Apple الـ Macintosh عام 1984. دخل الحاسوب إلى المنازل والمكاتب.</p>
+          </div>
+        </div>
+
+        <div class="tl-item" data-era="1990s">
+          <div class="tl-node"><div class="tl-dot"></div></div>
+          <div class="tl-label">1990s</div>
+          <div class="tl-title">The Web</div>
+          <div class="tl-detail">
+            <h4>شبكة الإنترنت — 1990s</h4>
+            <p>اخترع Tim Berners-Lee الويب عام 1991. أصبح الإنترنت متاحاً للعموم وغيّر طريقة تواصل البشر وتبادل المعلومات.</p>
+          </div>
+        </div>
+
+        <div class="tl-item" data-era="2000s">
+          <div class="tl-node"><div class="tl-dot"></div></div>
+          <div class="tl-label">2000s</div>
+          <div class="tl-title">Smartphones</div>
+          <div class="tl-detail">
+            <h4>الهواتف الذكية — 2000s</h4>
+            <p>أطلق Steve Jobs الـ iPhone عام 2007 وبدأت Google عصر Android. وضع الناس الحاسوب في جيوبهم.</p>
+          </div>
+        </div>
+
+        <div class="tl-item active" data-era="today">
+          <div class="tl-node"><div class="tl-dot"></div></div>
+          <div class="tl-label">Today</div>
+          <div class="tl-title">AI & Modern Computing</div>
+          <div class="tl-detail">
+            <h4>الذكاء الاصطناعي — الحاضر</h4>
+            <p>نعيش عصر الذكاء الاصطناعي والحوسبة السحابية والحوسبة الكمومية. المستقبل يصنعه مثلكم من طلاب علوم الحاسوب.</p>
+          </div>
+        </div>
+
+      </div>
+      <div class="tl-detail-panel" id="tlDetailPanel">
+        <div class="tl-detail-inner" id="tlDetailInner">
+          <h4>اختر مرحلة لمعرفة التفاصيل</h4>
+          <p>اضغط على أي نقطة في الـ Timeline لاستعراض معلومات إضافية عن تلك المرحلة التقنية.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 9. DEV MATRIX GALLERY -->
+<section class="section dm-gallery-section" id="dm-gallery">
+  <div class="container">
+    <div class="section-label reveal">16 — Gallery</div>
+    <h2 class="section-title reveal">Dev Matrix Gallery</h2>
+    <p class="section-sub reveal">الهوية البصرية لدفعة Dev Matrix — نسخ وعناصر الشعار.</p>
+    <div class="dm-gallery-grid">
+
+      <div class="gallery-item gallery-main reveal">
+        <div class="gallery-item-inner">
+          <img src="assets/logo.jpg" alt="Dev Matrix Logo — الشعار الرئيسي" class="gallery-logo-img" />
+          <div class="gallery-item-label">الشعار الرئيسي</div>
+          <div class="gallery-item-desc">Primary Logo — Full Color</div>
+        </div>
+      </div>
+
+      <div class="gallery-item reveal" style="background:linear-gradient(135deg,#0D2B8E,#1565C0)">
+        <div class="gallery-item-inner">
+          <img src="assets/logo.jpg" alt="Dev Matrix Logo Dark" class="gallery-logo-img" style="filter:brightness(0) invert(1) opacity(0.92);" />
+          <div class="gallery-item-label" style="color:#fff;">نسخة بيضاء</div>
+          <div class="gallery-item-desc" style="color:rgba(255,255,255,0.6);">White Version — Dark Background</div>
+        </div>
+      </div>
+
+      <div class="gallery-item reveal" style="background:#F5F7FB;">
+        <div class="gallery-item-inner">
+          <div class="gallery-badge-wrap">
+            <div class="gallery-badge">
+              <img src="assets/logo.jpg" alt="Dev Matrix Badge" style="width:52px;height:52px;border-radius:10px;" />
+              <span>DM</span>
+            </div>
+          </div>
+          <div class="gallery-item-label">شارة الدفعة</div>
+          <div class="gallery-item-desc">Cohort Badge</div>
+        </div>
+      </div>
+
+      <div class="gallery-item reveal" style="background:#071020;">
+        <div class="gallery-item-inner">
+          <div class="gallery-horizontal-logo">
+            <img src="assets/logo.jpg" alt="Logo" style="width:56px;height:56px;border-radius:10px;filter:brightness(0) invert(1) opacity(0.9);" />
+            <div>
+              <div style="font-family:'Space Grotesk',sans-serif;font-size:1.3rem;font-weight:800;color:#fff;letter-spacing:0.06em;">DEV MATRIX</div>
+              <div style="font-family:'Space Grotesk',sans-serif;font-size:0.75rem;font-weight:600;color:#29B6F6;letter-spacing:0.18em;">COMPUTER SCIENCE</div>
+            </div>
+          </div>
+          <div class="gallery-item-label" style="color:rgba(255,255,255,0.8);">Horizontal Layout</div>
+          <div class="gallery-item-desc" style="color:rgba(255,255,255,0.4);">Logo + Wordmark</div>
+        </div>
+      </div>
+
+      <div class="gallery-item reveal" style="background:#F0F4FA;">
+        <div class="gallery-item-inner">
+          <div class="gallery-icon-grid">
+            <div class="gallery-icon-item" style="background:#0D2B8E;color:#fff;">🎓</div>
+            <div class="gallery-icon-item" style="background:#1565C0;color:#fff;">💻</div>
+            <div class="gallery-icon-item" style="background:#1E88E5;color:#fff;">🔬</div>
+            <div class="gallery-icon-item" style="background:#29B6F6;color:#fff;">⚡</div>
+          </div>
+          <div class="gallery-item-label">عناصر الهوية</div>
+          <div class="gallery-item-desc">Brand Color Chips</div>
+        </div>
+      </div>
+
+      <div class="gallery-item reveal" style="background:linear-gradient(135deg,#e8f0fe,#dbeafe);">
+        <div class="gallery-item-inner">
+          <div class="gallery-gradient-bar">
+            <div style="background:#0D2B8E;flex:1;"></div>
+            <div style="background:#1565C0;flex:1.5;"></div>
+            <div style="background:#1E88E5;flex:1.5;"></div>
+            <div style="background:#29B6F6;flex:1;"></div>
+          </div>
+          <div class="gallery-item-label">تدرج الهوية</div>
+          <div class="gallery-item-desc">Brand Gradient Palette</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- 10. COMING SOON -->
+<section class="section coming-soon-section" id="coming-soon">
+  <div class="container">
+    <div class="coming-soon-inner reveal">
+      <div class="cs-glow"></div>
+      <div class="cs-icon">🚀</div>
+      <div class="section-label" style="margin-bottom:20px;">More Coming Soon</div>
+      <h2 class="cs-title">More Challenges Coming Soon</h2>
+      <p class="cs-subtitle">The Matrix is still growing...</p>
+      <div class="cs-items">
+        <div class="cs-item">🏆 Leaderboard</div>
+        <div class="cs-item">🤖 AI Challenge</div>
+        <div class="cs-item">🔐 Crypto Puzzle</div>
+        <div class="cs-item">📱 Mobile Challenge</div>
+        <div class="cs-item">🌐 Network Quest</div>
+        <div class="cs-item">🧬 Data Science</div>
+      </div>
+      <div class="cs-tagline">ترقّبوا المزيد من التحديات والألعاب التقنية.</div>
     </div>
   </div>
 </section>
