@@ -17,6 +17,8 @@
 document.addEventListener('DOMContentLoaded', () => {
   initNavbar();
   initScrollReveal();
+  initPlayerIdentity();
+  initLiveLeaderboard();
   initChallenges();
   initQuiz();
   initCodeChallenge();
@@ -201,6 +203,7 @@ function initChallenges() {
           if (statusEl) {
             statusEl.textContent = pct >= 75 ? '🎉 نتيجة ممتازة!' : pct >= 50 ? '👍 نتيجة جيدة!' : '📚 حاول مرة أخرى لتحسين نتيجتك';
           }
+          recordGameScore(`challenge_${key}`, data.title, score, data.questions.length, `${pct}%`);
         }
       });
     });
@@ -346,6 +349,8 @@ function initQuiz() {
     const iconEl = document.getElementById('resultIcon');
     if (labelEl) labelEl.textContent = lbl;
     if (iconEl) iconEl.textContent = icon;
+
+    recordGameScore('cs_quiz', 'الكويز البرمجي', score, total, `${pct}%`);
   }
 }
 
@@ -441,6 +446,8 @@ function initCodeChallenge() {
       const resLabelEl = document.getElementById('ccResultLabel');
       if (resScoreEl) resScoreEl.textContent = `${score} / ${ch.length}`;
       if (resLabelEl) resLabelEl.textContent = pct >= 80 ? 'Excellent Coder! 🏆' : pct >= 60 ? 'Good Job! 👍' : 'Keep Practicing! 💪';
+
+      recordGameScore('code_challenge', 'تحدي الكود', score, ch.length, `${pct}%`);
     } else {
       renderCC();
     }
@@ -537,6 +544,8 @@ function initGuessTech() {
       const resLabelEl = document.getElementById('gtResultLabel');
       if (resScoreEl) resScoreEl.textContent = `${score} / ${rounds.length}`;
       if (resLabelEl) resLabelEl.textContent = pct >= 80 ? 'Tech Expert! 🌐' : pct >= 50 ? 'Good Guesser! 👍' : 'Keep Learning! 📚';
+
+      recordGameScore('guess_tech', 'خمن التقنية', score, rounds.length, `${pct}%`);
     } else {
       renderGT();
     }
@@ -647,6 +656,8 @@ function initMatrixGame() {
     if (finalTimeEl) finalTimeEl.textContent = elapsed;
     if (gridEl) gridEl.innerHTML = '';
     resultEl?.classList.remove('hidden');
+
+    recordGameScore('matrix_game', 'لعبة المصفوفة', gameScore, 500, `مستوى ${gameLevel} - زمن ${elapsed} ث`);
   }
 }
 
@@ -730,7 +741,10 @@ function initTechMemory() {
         if (pe) pe.textContent = pairs;
         flipped = [];
         locked = false;
-        if (pairs === items.length) clearInterval(timerInterval);
+        if (pairs === items.length) {
+          clearInterval(timerInterval);
+          recordGameScore('tech_memory', 'لعبة الذاكرة', 100, 100, `محاولات: ${attempts} - زمن: ${timerVal} ث`);
+        }
       } else {
         setTimeout(() => {
           a.classList.remove('flipped');
@@ -871,3 +885,286 @@ function hide(id) {
   const el = typeof id === 'string' ? document.getElementById(id) : id;
   el?.classList.add('hidden');
 }
+
+/* ===================================================================
+   PLAYER IDENTITY & FIREBASE REAL-TIME LEADERBOARD
+=================================================================== */
+const PLAYER_STORAGE_KEY = 'devmatrix_player_name';
+const PLAYER_GUEST_KEY   = 'devmatrix_player_is_guest';
+
+let activeLeaderboardFilter = 'all';
+let cachedScores = [];
+
+function initPlayerIdentity() {
+  updateNavPlayerUI();
+
+  // Load guests list into player dropdown if available
+  if (window.DevMatrixFB) {
+    window.DevMatrixFB.subscribeToGuests(guests => {
+      const select = document.getElementById('playerDropdownSelect');
+      if (!select) return;
+      select.innerHTML = '<option value="">-- اختر اسمك من القائمة --</option>';
+      guests.forEach(g => {
+        const opt = document.createElement('option');
+        opt.value = g.name;
+        opt.textContent = `${g.name} (${g.title || 'طالب/مدعو'})`;
+        select.appendChild(opt);
+      });
+    });
+  }
+}
+
+function updateNavPlayerUI() {
+  const name = localStorage.getItem(PLAYER_STORAGE_KEY);
+  const isGuest = localStorage.getItem(PLAYER_GUEST_KEY) === 'true';
+  const navNameEl = document.getElementById('navPlayerName');
+
+  if (navNameEl) {
+    if (name) {
+      navNameEl.textContent = isGuest ? `ضيف: ${name}` : `🎓 ${name}`;
+    } else {
+      navNameEl.textContent = 'تسجيل اللاعب';
+    }
+  }
+}
+
+window.openPlayerModal = function() {
+  const errorEl = document.getElementById('playerAuthError');
+  if (errorEl) errorEl.style.display = 'none';
+  document.getElementById('playerModal')?.classList.add('open');
+};
+
+window.closePlayerModal = function() {
+  document.getElementById('playerModal')?.classList.remove('open');
+};
+
+window.togglePlayerTypeUI = function() {
+  const isReg = document.getElementById('pTypeReg')?.checked;
+  const wrap = document.getElementById('registeredInputsWrap');
+  if (wrap) wrap.style.display = isReg ? 'block' : 'none';
+};
+
+window.confirmPlayerIdentity = async function() {
+  const isGuest = document.getElementById('pTypeGuest')?.checked;
+  const errorEl = document.getElementById('playerAuthError');
+  const btn = document.getElementById('btnPlayerLogin');
+  if (errorEl) errorEl.style.display = 'none';
+
+  if (isGuest) {
+    const randomGuestId = Math.floor(100 + Math.random() * 900);
+    const playerName = `ضيف_${randomGuestId}`;
+    localStorage.setItem(PLAYER_STORAGE_KEY, playerName);
+    localStorage.setItem(PLAYER_GUEST_KEY, 'true');
+    updateNavPlayerUI();
+    closePlayerModal();
+    showToast(`أهلاً بك كـ ${playerName} في ساحة التحديات! 🚀`);
+    return;
+  }
+
+  // Official Registered Player verification
+  const name = document.getElementById('playerAuthName')?.value.trim();
+  const pin = document.getElementById('playerAuthPin')?.value.trim();
+
+  if (!name) {
+    if (errorEl) {
+      errorEl.textContent = 'الرجاء كتابة اسمك الكامل كما هو في بطاقة الدعوة.';
+      errorEl.style.display = 'block';
+    }
+    return;
+  }
+
+  if (!pin) {
+    if (errorEl) {
+      errorEl.textContent = 'الرجاء إدخال رقم الدخول الخاص بك (الموجود في كرت دعوتك).';
+      errorEl.style.display = 'block';
+    }
+    return;
+  }
+
+  if (btn) {
+    btn.disabled = true;
+    btn.textContent = 'جاري التحقق... ⏳';
+  }
+
+  let verified = false;
+  let finalName = name;
+
+  if (window.DevMatrixFB) {
+    const res = await window.DevMatrixFB.verifyPlayerByPin(name, pin);
+    if (res.valid) {
+      verified = true;
+      finalName = res.guest.name || name;
+    } else {
+      if (errorEl) {
+        errorEl.textContent = res.message || 'رقم الدخول أو الاسم غير متطابق. تأكد من الرقم المكتوب في كرت دعوتك.';
+        errorEl.style.display = 'block';
+      }
+      if (btn) {
+        btn.disabled = false;
+        btn.textContent = 'التحقق وبدء اللعب 🚀';
+      }
+      return;
+    }
+  } else {
+    verified = true;
+  }
+
+  if (btn) {
+    btn.disabled = false;
+    btn.textContent = 'التحقق وبدء اللعب 🚀';
+  }
+
+  localStorage.setItem(PLAYER_STORAGE_KEY, finalName);
+  localStorage.setItem(PLAYER_GUEST_KEY, 'false');
+  localStorage.setItem('devmatrix_player_pin', pin);
+
+  updateNavPlayerUI();
+  closePlayerModal();
+  showToast(`تم التحقق بنجاح! أهلاً بك يا ${finalName} 🎓✨`);
+};
+
+function getActivePlayer() {
+  const name = localStorage.getItem(PLAYER_STORAGE_KEY);
+  const isGuest = localStorage.getItem(PLAYER_GUEST_KEY) === 'true';
+
+  if (!name) {
+    const randomGuestId = Math.floor(100 + Math.random() * 900);
+    const guestName = `ضيف_${randomGuestId}`;
+    localStorage.setItem(PLAYER_STORAGE_KEY, guestName);
+    localStorage.setItem(PLAYER_GUEST_KEY, 'true');
+    updateNavPlayerUI();
+    return { name: guestName, isGuest: true };
+  }
+
+  return { name, isGuest };
+}
+
+// Record player score and push to Firebase
+function recordGameScore(gameId, gameTitle, score, maxScore, details) {
+  const player = getActivePlayer();
+
+  if (window.DevMatrixFB) {
+    window.DevMatrixFB.saveGameScore({
+      playerName: player.name,
+      isGuest: player.isGuest,
+      gameId: gameId,
+      gameTitle: gameTitle,
+      score: score,
+      maxScore: maxScore,
+      details: details
+    }).then(() => {
+      showToast(`🎉 تم حفظ نتيجتك (${score}) باسم ${player.name} في لوحة الصدارة السحابية!`);
+    });
+  }
+}
+
+// Live Leaderboard Initializer
+function initLiveLeaderboard() {
+  if (window.DevMatrixFB) {
+    window.DevMatrixFB.subscribeToScores(scores => {
+      cachedScores = scores;
+      renderLeaderboardUI();
+    });
+  }
+}
+
+window.switchLBFilter = function(gameId, btn) {
+  activeLeaderboardFilter = gameId;
+  document.querySelectorAll('#lbTabs .lb-tab').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderLeaderboardUI();
+};
+
+function renderLeaderboardUI() {
+  const listEl = document.getElementById('leaderboardList');
+  if (!listEl) return;
+
+  let filtered = activeLeaderboardFilter === 'all' 
+    ? cachedScores 
+    : cachedScores.filter(s => s.gameId === activeLeaderboardFilter || s.gameId.startsWith(activeLeaderboardFilter));
+
+  // Sort by highest score / percentage
+  filtered.sort((a, b) => (b.score || 0) - (a.score || 0));
+
+  const top10 = filtered.slice(0, 10);
+
+  if (top10.length === 0) {
+    listEl.innerHTML = `
+      <div class="lb-loading">
+        🎮 لا توجد نتائج مسجلة حتى الآن في هذه الفئة. كن أول من يتصدر اللوحة!
+      </div>`;
+    return;
+  }
+
+  listEl.innerHTML = top10.map((s, idx) => {
+    const rankClass = idx === 0 ? 'gold' : idx === 1 ? 'silver' : idx === 2 ? 'bronze' : '';
+    const rankIcon = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `${idx + 1}`;
+    const isGuest = s.isGuest;
+
+    return `
+      <div class="lb-row">
+        <div class="lb-left">
+          <div class="lb-rank ${rankClass}">${rankIcon}</div>
+          <div>
+            <div class="lb-player-name">
+              ${escapeHtml(s.playerName)} 
+              <span style="font-size:0.75rem;padding:2px 7px;border-radius:6px;background:${isGuest ? 'rgba(255,255,255,0.08)' : 'rgba(0,229,255,0.15)'};color:${isGuest ? '#aaa' : 'var(--accent-cyan)'};margin-right:6px;">
+                ${isGuest ? 'ضيف' : 'طالب'}
+              </span>
+            </div>
+            <div class="lb-player-tag">${escapeHtml(s.gameTitle || s.gameId)} · ${escapeHtml(s.details || '')}</div>
+          </div>
+        </div>
+        <div class="lb-right">
+          <div class="lb-score-val">${s.score} <span style="font-size:0.75rem;color:var(--text-muted);font-weight:400;">نقطة</span></div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+function escapeHtml(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
+function showToast(msg) {
+  let toast = document.getElementById('globalToast');
+  if (!toast) {
+    toast = document.createElement('div');
+    toast.id = 'globalToast';
+    toast.style.cssText = `
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: rgba(13, 43, 142, 0.95);
+      backdrop-filter: blur(10px);
+      border: 1px solid var(--accent-cyan);
+      color: #fff;
+      padding: 12px 24px;
+      border-radius: 9999px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      z-index: 99999;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+    `;
+    document.body.appendChild(toast);
+  }
+
+  toast.textContent = msg;
+  toast.style.transform = 'translateX(-50%) translateY(0)';
+  toast.style.opacity = '1';
+
+  setTimeout(() => {
+    toast.style.transform = 'translateX(-50%) translateY(100px)';
+    toast.style.opacity = '0';
+  }, 4000);
+}
+

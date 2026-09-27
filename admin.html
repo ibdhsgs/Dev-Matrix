@@ -1,0 +1,1019 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dev Matrix — لوحة تحكم الإدارة ونظام الدعوات</title>
+  <meta name="description" content="لوحة إدارة دعوات الحفل وإحصائيات مركز الألعاب لدفعة Dev Matrix" />
+
+  <!-- Google Fonts (Official Site Typography) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Main Site Stylesheet -->
+  <link rel="stylesheet" href="style.css" />
+
+  <!-- Firebase Compat CDN -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+
+  <!-- SheetJS (Excel Parser & Exporter) -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+
+  <!-- Firebase Config Script -->
+  <script src="firebase-config.js"></script>
+
+  <style>
+    /* ===================================================================
+       OFFICIAL BRAND THEME (White / Offwhite / Royal Deep Blue)
+    =================================================================== */
+    :root {
+      --primary-deep:  #0D2B8E;
+      --primary-blue:  #1565C0;
+      --primary-sky:   #1E88E5;
+      --primary-light: #29B6F6;
+      --accent-cyan:   #00E5FF;
+      --accent-green:  #10B981;
+      --accent-gold:   #D97706;
+      --accent-red:    #EF4444;
+
+      --bg-white:      #FFFFFF;
+      --bg-offwhite:   #F8FAFD;
+      --bg-subtle:     #F0F4FA;
+      --bg-card:       #FFFFFF;
+
+      --text-main:     #0D1B3E;
+      --text-muted:    #5A6E8C;
+      --text-light:    #8FA3BF;
+
+      --border-light:  #E2E8F3;
+      --border-card:   #EDF2F9;
+      --border-active: #1E88E5;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-offwhite);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Admin Header */
+    .admin-header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-light);
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      box-shadow: 0 4px 20px rgba(13, 43, 142, 0.04);
+    }
+
+    .admin-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--primary-deep);
+    }
+
+    .admin-logo-img {
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      border: 1px solid var(--border-light);
+      object-fit: cover;
+      box-shadow: 0 2px 8px rgba(13, 43, 142, 0.08);
+    }
+
+    .admin-title-wrap h1 {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--primary-deep);
+      line-height: 1.2;
+    }
+
+    .admin-title-wrap p {
+      font-size: 0.76rem;
+      color: var(--primary-blue);
+      font-weight: 500;
+    }
+
+    .admin-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .btn-header-action {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      color: var(--text-main);
+      padding: 8px 16px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .btn-header-action:hover {
+      background: #E2E8F3;
+      border-color: var(--primary-sky);
+      color: var(--primary-deep);
+    }
+
+    /* Auth Gate (PIN Modal) */
+    #authGate {
+      position: fixed;
+      inset: 0;
+      background: rgba(13, 27, 62, 0.55);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .pin-card {
+      background: #FFFFFF;
+      border: 1px solid var(--border-light);
+      border-radius: 24px;
+      padding: 40px 32px;
+      max-width: 420px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 24px 60px rgba(13, 43, 142, 0.18), 0 0 32px rgba(41, 182, 246, 0.12);
+    }
+
+    .pin-icon {
+      width: 64px;
+      height: 64px;
+      border-radius: 18px;
+      background: rgba(21, 101, 192, 0.08);
+      border: 1px solid rgba(21, 101, 192, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      margin: 0 auto 16px auto;
+      color: var(--primary-deep);
+    }
+
+    .pin-title {
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--primary-deep);
+      margin-bottom: 8px;
+    }
+
+    .pin-subtitle {
+      font-size: 0.88rem;
+      color: var(--text-muted);
+      margin-bottom: 24px;
+      line-height: 1.6;
+    }
+
+    .pin-input {
+      width: 100%;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1.5px solid var(--border-light);
+      background: var(--bg-subtle);
+      color: var(--text-main);
+      font-size: 1.25rem;
+      text-align: center;
+      letter-spacing: 4px;
+      font-family: 'Space Grotesk', monospace;
+      margin-bottom: 16px;
+      outline: none;
+      transition: all 0.2s;
+    }
+
+    .pin-input:focus {
+      border-color: var(--primary-blue);
+      background: #FFFFFF;
+      box-shadow: 0 0 16px rgba(21, 101, 192, 0.18);
+    }
+
+    .btn-pin-submit {
+      width: 100%;
+      background: linear-gradient(135deg, var(--primary-deep) 0%, var(--primary-blue) 50%, var(--primary-sky) 100%);
+      color: #fff;
+      border: none;
+      padding: 14px;
+      border-radius: 12px;
+      font-size: 1.02rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 6px 20px rgba(21, 101, 192, 0.25);
+    }
+
+    .btn-pin-submit:hover {
+      box-shadow: 0 10px 28px rgba(21, 101, 192, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .pin-error {
+      color: var(--accent-red);
+      font-size: 0.85rem;
+      margin-top: 10px;
+      font-weight: 600;
+      display: none;
+    }
+
+    /* Admin Container */
+    .admin-container {
+      max-width: 1240px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 28px 24px 60px 24px;
+      flex: 1;
+    }
+
+    /* Tabs Navigation */
+    .admin-tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 26px;
+      border-bottom: 1px solid var(--border-light);
+      padding-bottom: 12px;
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      background: #FFFFFF;
+      border: 1px solid var(--border-light);
+      color: var(--text-muted);
+      padding: 10px 22px;
+      border-radius: 12px;
+      font-size: 0.94rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+      white-space: nowrap;
+      font-family: inherit;
+      box-shadow: 0 2px 6px rgba(13, 43, 142, 0.02);
+    }
+
+    .tab-btn:hover {
+      background: var(--bg-subtle);
+      color: var(--primary-deep);
+    }
+
+    .tab-btn.active {
+      background: linear-gradient(135deg, var(--primary-deep) 0%, var(--primary-blue) 100%);
+      border-color: transparent;
+      color: #fff;
+      box-shadow: 0 6px 18px rgba(21, 101, 192, 0.25);
+    }
+
+    /* Stats Overview Cards */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 18px;
+      margin-bottom: 28px;
+    }
+
+    .stat-card {
+      background: #FFFFFF;
+      border: 1px solid var(--border-light);
+      border-radius: 18px;
+      padding: 22px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      box-shadow: 0 6px 20px rgba(13, 43, 142, 0.05);
+    }
+
+    .stat-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .stat-blue .stat-icon { background: rgba(21, 101, 192, 0.08); color: var(--primary-blue); }
+    .stat-green .stat-icon { background: rgba(16, 185, 129, 0.1); color: var(--accent-green); }
+    .stat-gold .stat-icon { background: rgba(217, 119, 6, 0.1); color: var(--accent-gold); }
+    .stat-purple .stat-icon { background: rgba(124, 58, 237, 0.1); color: #7C3AED; }
+
+    .stat-val {
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--primary-deep);
+      line-height: 1.1;
+      font-family: 'Space Grotesk', sans-serif;
+    }
+
+    .stat-lbl {
+      font-size: 0.84rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+      font-weight: 500;
+    }
+
+    /* Actions Toolbar */
+    .toolbar-card {
+      background: #FFFFFF;
+      border: 1px solid var(--border-light);
+      border-radius: 18px;
+      padding: 20px 24px;
+      margin-bottom: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      box-shadow: 0 4px 16px rgba(13, 43, 142, 0.04);
+    }
+
+    .toolbar-search {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex: 1;
+      min-width: 260px;
+    }
+
+    .search-input {
+      width: 100%;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      padding: 11px 16px;
+      border-radius: 10px;
+      color: var(--text-main);
+      font-size: 0.92rem;
+      font-family: inherit;
+      outline: none;
+    }
+
+    .search-input:focus {
+      background: #FFFFFF;
+      border-color: var(--primary-blue);
+      box-shadow: 0 0 10px rgba(21, 101, 192, 0.15);
+    }
+
+    .filter-select {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      padding: 11px 14px;
+      border-radius: 10px;
+      color: var(--text-main);
+      font-size: 0.88rem;
+      font-family: inherit;
+      outline: none;
+    }
+
+    .toolbar-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .btn-action-primary {
+      background: linear-gradient(135deg, var(--primary-deep) 0%, var(--primary-blue) 100%);
+      color: #fff;
+      border: none;
+      padding: 11px 20px;
+      border-radius: 10px;
+      font-size: 0.92rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 14px rgba(21, 101, 192, 0.2);
+    }
+
+    .btn-action-primary:hover {
+      box-shadow: 0 8px 20px rgba(21, 101, 192, 0.35);
+      transform: translateY(-1px);
+    }
+
+    .btn-action-secondary {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      color: var(--text-main);
+      padding: 11px 18px;
+      border-radius: 10px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-action-secondary:hover {
+      background: #E2E8F3;
+      border-color: var(--primary-sky);
+      color: var(--primary-deep);
+    }
+
+    /* Excel Drag & Drop Zone */
+    .excel-drop-zone {
+      border: 2px dashed rgba(21, 101, 192, 0.35);
+      background: #FFFFFF;
+      border-radius: 18px;
+      padding: 28px;
+      text-align: center;
+      margin-bottom: 24px;
+      cursor: pointer;
+      transition: all 0.2s;
+      box-shadow: 0 4px 14px rgba(13, 43, 142, 0.03);
+    }
+
+    .excel-drop-zone:hover, .excel-drop-zone.dragover {
+      border-color: var(--primary-blue);
+      background: rgba(21, 101, 192, 0.03);
+    }
+
+    .excel-drop-icon {
+      font-size: 2.4rem;
+      margin-bottom: 8px;
+    }
+
+    .excel-drop-title {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--primary-deep);
+      margin-bottom: 4px;
+    }
+
+    .excel-drop-sub {
+      font-size: 0.84rem;
+      color: var(--text-muted);
+    }
+
+    /* Table Component */
+    .table-card {
+      background: #FFFFFF;
+      border: 1px solid var(--border-light);
+      border-radius: 18px;
+      overflow: hidden;
+      box-shadow: 0 6px 24px rgba(13, 43, 142, 0.06);
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: right;
+    }
+
+    .data-table th {
+      background: var(--bg-subtle);
+      padding: 15px 18px;
+      font-size: 0.84rem;
+      color: var(--text-muted);
+      font-weight: 700;
+      border-bottom: 1px solid var(--border-light);
+      white-space: nowrap;
+    }
+
+    .data-table td {
+      padding: 15px 18px;
+      border-bottom: 1px solid var(--border-card);
+      font-size: 0.92rem;
+      vertical-align: middle;
+      color: var(--text-main);
+    }
+
+    .data-table tr:hover {
+      background: rgba(248, 250, 253, 0.8);
+    }
+
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+    }
+
+    .badge-confirmed {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #059669;
+    }
+
+    .badge-pending {
+      background: rgba(217, 119, 6, 0.1);
+      border: 1px solid rgba(217, 119, 6, 0.35);
+      color: #D97706;
+    }
+
+    .row-actions {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-row-action {
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      color: var(--text-main);
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-row-action:hover {
+      background: rgba(21, 101, 192, 0.12);
+      border-color: var(--primary-sky);
+      color: var(--primary-deep);
+    }
+
+    .btn-row-whatsapp:hover {
+      background: rgba(37, 211, 102, 0.15);
+      border-color: #25D366;
+      color: #128C7E;
+    }
+
+    .btn-row-delete:hover {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: var(--accent-red);
+      color: var(--accent-red);
+    }
+
+    /* Modal Component */
+    .admin-modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(13, 27, 62, 0.45);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .admin-modal.open {
+      display: flex;
+    }
+
+    .modal-box {
+      background: #FFFFFF;
+      border: 1px solid var(--border-light);
+      border-radius: 22px;
+      max-width: 540px;
+      width: 100%;
+      padding: 32px 28px;
+      box-shadow: 0 24px 60px rgba(13, 43, 142, 0.18);
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+
+    .modal-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 22px;
+      border-bottom: 1px solid var(--border-light);
+      padding-bottom: 12px;
+    }
+
+    .modal-title {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--primary-deep);
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.6rem;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.86rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border-light);
+      background: var(--bg-subtle);
+      color: var(--text-main);
+      font-size: 0.95rem;
+      font-family: inherit;
+      outline: none;
+    }
+
+    .form-input:focus {
+      background: #FFFFFF;
+      border-color: var(--primary-blue);
+      box-shadow: 0 0 10px rgba(21, 101, 192, 0.15);
+    }
+
+    .modal-foot {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    /* Toast */
+    .admin-toast {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--primary-deep);
+      color: #fff;
+      padding: 12px 26px;
+      border-radius: 9999px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      z-index: 99999;
+      opacity: 0;
+      transition: all 0.3s;
+      pointer-events: none;
+      box-shadow: 0 10px 30px rgba(13, 43, 142, 0.25);
+    }
+
+    .admin-toast.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ADMIN PASSCODE GATE (Private access only) -->
+  <div id="authGate">
+    <div class="pin-card">
+      <div class="pin-icon">🔐</div>
+      <h2 class="pin-title">بوابة إدارة Dev Matrix</h2>
+      <p class="pin-subtitle">القسم مخصص لمدير الموقع والمشرف على الحفل فقط. الرجاء إدخال رمز الأمان للمتابعة.</p>
+      <input type="password" id="pinInput" class="pin-input" placeholder="••••••••" autofocus />
+      <button class="btn-pin-submit" id="pinSubmitBtn" onclick="verifyPin()">دخول للوحة التحكم</button>
+      <div class="pin-error" id="pinError">رمز الأمان غير صحيح. حاول مجدداً.</div>
+    </div>
+  </div>
+
+  <!-- TOP HEADER -->
+  <header class="admin-header">
+    <a href="index.html" class="admin-brand">
+      <img src="assets/logo.jpg" alt="Logo" class="admin-logo-img" />
+      <div class="admin-title-wrap">
+        <h1>لوحة تحكم Dev Matrix</h1>
+        <p>نظام الدعوات الرسمية ومركز الألعاب</p>
+      </div>
+    </a>
+    <div class="admin-header-actions">
+      <a href="games.html" class="btn-header-action" target="_blank">
+        <span>🎮</span> مركز الألعاب
+      </a>
+      <a href="index.html" class="btn-header-action" target="_blank">
+        <span>🌐</span> الموقع الرئيسي
+      </a>
+      <button class="btn-header-action" onclick="logoutAdmin()">
+        <span>🚪</span> خروج
+      </button>
+    </div>
+  </header>
+
+  <!-- MAIN ADMIN CONTENT -->
+  <main class="admin-container">
+
+    <!-- TABS -->
+    <div class="admin-tabs">
+      <button class="tab-btn active" onclick="switchTab('invitationsTab')">
+        <span>💌</span> إدارة الدعوات والمدعوين
+      </button>
+      <button class="tab-btn" onclick="switchTab('gamesTab')">
+        <span>🏆</span> نتائج وإحصائيات الألعاب
+      </button>
+      <button class="tab-btn" onclick="switchTab('eventTab')">
+        <span>⚙️</span> إعدادات الحفل والرسالة
+      </button>
+    </div>
+
+    <!-- STATS CARDS -->
+    <div class="stats-row">
+      <div class="stat-card stat-blue">
+        <div class="stat-icon">👥</div>
+        <div>
+          <div class="stat-val" id="statTotalGuests">0</div>
+          <div class="stat-lbl">إجمالي المدعوين</div>
+        </div>
+      </div>
+      <div class="stat-card stat-green">
+        <div class="stat-icon">✅</div>
+        <div>
+          <div class="stat-val" id="statConfirmedGuests">0</div>
+          <div class="stat-lbl">أكدوا الحضور (RSVP)</div>
+        </div>
+      </div>
+      <div class="stat-card stat-gold">
+        <div class="stat-icon">⏳</div>
+        <div>
+          <div class="stat-val" id="statPendingGuests">0</div>
+          <div class="stat-lbl">في انتظار التأكيد</div>
+        </div>
+      </div>
+      <div class="stat-card stat-purple">
+        <div class="stat-icon">🎮</div>
+        <div>
+          <div class="stat-val" id="statTotalGames">0</div>
+          <div class="stat-lbl">مرات لعب التحديات</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 1: INVITATIONS -->
+    <section id="invitationsTab">
+
+      <!-- TOOLBAR -->
+      <div class="toolbar-card">
+        <div class="toolbar-search">
+          <input type="text" id="guestSearchInput" class="search-input" placeholder="🔍 بحث باسم المدعو أو اللقب..." oninput="filterGuestsTable()" />
+          <select id="rsvpFilterSelect" class="filter-select" onchange="filterGuestsTable()">
+            <option value="all">كل الحالات</option>
+            <option value="confirmed">حاضر (مؤكد)</option>
+            <option value="pending">بانتظار التأكيد</option>
+          </select>
+        </div>
+
+        <div class="toolbar-actions">
+          <button class="btn-action-primary" onclick="openAddGuestModal()">
+            <span>➕</span> إضافة دعوة جديدة
+          </button>
+          <button class="btn-action-secondary" onclick="triggerExcelUpload()">
+            <span>📊</span> رفع ملف Excel / CSV
+          </button>
+          <button class="btn-action-secondary" onclick="downloadExcelTemplate()">
+            <span>📥</span> تحميل نموذج إكسل
+          </button>
+          <button class="btn-action-secondary" onclick="exportGuestsToExcel()">
+            <span>📤</span> تصدير القائمة
+          </button>
+        </div>
+      </div>
+
+      <!-- EXCEL DRAG & DROP ZONE -->
+      <div class="excel-drop-zone" id="excelDropZone" onclick="triggerExcelUpload()">
+        <input type="file" id="excelFileInput" accept=".xlsx, .xls, .csv" style="display:none;" onchange="handleExcelFile(this.files[0])" />
+        <div class="excel-drop-icon">📑</div>
+        <div class="excel-drop-title">اضغط هنا أو اسحب وأفلت ملف Excel (.xlsx أو .csv) لإضافة المدعوين دفعة واحدة</div>
+        <div class="excel-drop-sub">الأعمدة المدعومة: (الاسم / اسم المدعو)، (الصفة / اللقب)، (رقم المقعد)، (رقم الهاتف)</div>
+      </div>
+
+      <!-- GUESTS TABLE -->
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>اسم المدعو</th>
+              <th>الصفة / اللقب</th>
+              <th>رقم المقعد</th>
+              <th>رقم الهاتف</th>
+              <th>كود ألعاب الحفل (PIN)</th>
+              <th>حالة الحضور</th>
+              <th>تاريخ الإنشاء</th>
+              <th style="text-align:left;">إجراءات سريعة</th>
+            </tr>
+          </thead>
+          <tbody id="guestsTableBody">
+            <tr>
+              <td colspan="8" style="text-align:center;padding:32px;color:var(--text-muted);">
+                جاري تحميل المدعوين من Firebase... ⏳
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TAB 2: GAMES LEADERBOARD -->
+    <section id="gamesTab" class="hidden">
+      <div class="toolbar-card">
+        <div class="toolbar-search">
+          <select id="gameFilterSelect" class="filter-select" onchange="renderScoresTable()">
+            <option value="all">جميع الألعاب والتحديات</option>
+            <option value="cs_quiz">الكويز البرمجي (CS Quiz)</option>
+            <option value="code_challenge">تحدي الكود (Code Challenge)</option>
+            <option value="guess_tech">خمن التقنية (Guess Tech)</option>
+            <option value="matrix_game">لعبة المصفوفة (Matrix Game)</option>
+            <option value="tech_memory">لعبة الذاكرة (Tech Memory)</option>
+          </select>
+        </div>
+        <div class="toolbar-actions">
+          <button class="btn-action-secondary" style="color:var(--accent-red);border-color:rgba(239,68,68,0.4);" onclick="clearAllScoresConfirm()">
+            <span>🗑️</span> مسح سجلات الألعاب
+          </button>
+        </div>
+      </div>
+
+      <div class="table-card">
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>اسم اللاعب</th>
+              <th>نوع الحساب</th>
+              <th>اللعبة</th>
+              <th>النتيجة</th>
+              <th>النسبة</th>
+              <th>التفاصيل</th>
+              <th>التاريخ والوقت</th>
+            </tr>
+          </thead>
+          <tbody id="scoresTableBody">
+            <tr>
+              <td colspan="8" style="text-align:center;padding:32px;color:var(--text-muted);">
+                جاري جلب نتائج الألعاب... ⏳
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- TAB 3: EVENT SETTINGS -->
+    <section id="eventTab" class="hidden">
+      <div class="toolbar-card" style="max-width:720px;margin:0 auto;">
+        <div style="width:100%;">
+          <h3 style="margin-bottom:16px;color:var(--primary-deep);">⚙️ إعدادات الحفل ورسائل الواتساب</h3>
+
+          <div class="form-group">
+            <label class="form-label">تاريخ الحفل</label>
+            <input type="text" id="settingEventDate" class="form-input" value="الخميس، 15 أكتوبر 2026" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">وقت الحفل</label>
+            <input type="text" id="settingEventTime" class="form-input" value="الساعة 10:00 صباحاً" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">مكان الحفل (القاعة)</label>
+            <input type="text" id="settingEventHall" class="form-input" value="القاعة الكبرى للمؤتمرات والاحتفالات" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">نص رسالة الواتساب الترحيبية عند إرسال الدعوة</label>
+            <textarea id="settingWhatsappMsg" class="form-input" rows="4" style="resize:vertical;">تتشرف الدفعة التاسعة - قسم علوم الحاسوب - كلية الحاسبات جامعة سيئون بدعوتكم لحضور حفل الإشهار. للاطلاع على بطاقة دعوتكم الخاصة والمخصصة باسمكم:</textarea>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label">تغيير رمز PIN لدخول المدير</label>
+            <input type="password" id="settingNewPin" class="form-input" placeholder="اتركه فارغاً لعدم التغيير" />
+          </div>
+
+          <button class="btn-action-primary" style="margin-top:12px;width:100%;justify-content:center;" onclick="saveEventSettings()">
+            <span>💾</span> حفظ الإعدادات
+          </button>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ADD GUEST MODAL -->
+  <div class="admin-modal" id="addGuestModal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3 class="modal-title">إضافة دعوة جديدة</h3>
+        <button class="modal-close" onclick="closeAddGuestModal()">&times;</button>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">اسم المدعو الكريم *</label>
+        <input type="text" id="newGuestName" class="form-input" placeholder="مثال: د. أحمد محمد علي" required />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">الصفة / اللقب</label>
+        <input type="text" id="newGuestTitle" class="form-input" placeholder="مثال: ضيف شرف / أستاذ مشارك / عميد الكلية" value="ضيف شرف" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">رقم أو فئة المقعد</label>
+        <input type="text" id="newGuestSeat" class="form-input" placeholder="مثال: VIP-01 أو A-14" value="VIP" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">رقم الهاتف (مع الرمز الدولي لمشاركة الواتساب مباشرة)</label>
+        <input type="tel" id="newGuestPhone" class="form-input" placeholder="مثال: 967777000000 أو 966500000000" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">ملاحظات إضافية (اختياري)</label>
+        <input type="text" id="newGuestNotes" class="form-input" placeholder="ملاحظات تنظيمية خاصة باللجنة" />
+      </div>
+
+      <div class="modal-foot">
+        <button class="btn-action-secondary" onclick="closeAddGuestModal()">إلغاء</button>
+        <button class="btn-action-primary" onclick="submitNewGuest()">حفظ وتوليد الرابط</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- BULK IMPORT PREVIEW MODAL -->
+  <div class="admin-modal" id="bulkPreviewModal">
+    <div class="modal-box" style="max-width:700px;">
+      <div class="modal-head">
+        <h3 class="modal-title">معاينة استيراد ملف الإكسل</h3>
+        <button class="modal-close" onclick="closeBulkModal()">&times;</button>
+      </div>
+
+      <p style="font-size:0.88rem;color:var(--text-muted);margin-bottom:14px;">
+        تم العثور على <strong id="bulkCountDisplay" style="color:var(--primary-blue);">0</strong> مدعو في الملف. يرجى المراجعة قبل الحفظ في Firebase:
+      </p>
+
+      <div style="max-height:300px;overflow-y:auto;border:1px solid var(--border-light);border-radius:10px;margin-bottom:16px;">
+        <table class="data-table" style="font-size:0.82rem;">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>الاسم</th>
+              <th>الصفة</th>
+              <th>المقعد</th>
+              <th>الهاتف</th>
+            </tr>
+          </thead>
+          <tbody id="bulkPreviewTableBody"></tbody>
+        </table>
+      </div>
+
+      <div id="bulkProgressWrap" style="display:none;margin-bottom:14px;">
+        <div style="font-size:0.82rem;color:var(--primary-blue);margin-bottom:4px;" id="bulkProgressText">جاري الاستيراد: 0%</div>
+        <div style="width:100%;height:8px;background:var(--border-light);border-radius:9999px;overflow:hidden;">
+          <div id="bulkProgressBar" style="width:0%;height:100%;background:linear-gradient(90deg, var(--primary-deep), var(--primary-sky));transition:width 0.2s;"></div>
+        </div>
+      </div>
+
+      <div class="modal-foot">
+        <button class="btn-action-secondary" onclick="closeBulkModal()">إلغاء</button>
+        <button class="btn-action-primary" id="btnConfirmBulk" onclick="executeBulkImport()">
+          <span>⚡</span> تأكيد واستيراد الكل إلى Firebase
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="admin-toast" id="adminToast">تم الحفظ بنجاح</div>
+
+  <script src="admin.js"></script>
+</body>
+</html>

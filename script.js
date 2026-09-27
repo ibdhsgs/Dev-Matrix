@@ -243,7 +243,7 @@ function initColorCopy() {
 
   function copyColorCode(color) {
     navigator.clipboard.writeText(color).then(() => {
-      showToast(`طھظ… ظ†ط³ط® ط§ظ„ظƒظˆط¯: ${color}`);
+      showToast(`تم نسخ الكود: ${color}`);
     }).catch(() => {
       // Fallback
       const ta = document.createElement('textarea');
@@ -252,7 +252,7 @@ function initColorCopy() {
       ta.select();
       document.execCommand('copy');
       document.body.removeChild(ta);
-      showToast(`طھظ… ظ†ط³ط® ط§ظ„ظƒظˆط¯: ${color}`);
+      showToast(`تم نسخ الكود: ${color}`);
     });
   }
 
@@ -272,7 +272,7 @@ window.copyColor = function(hex, btn) {
   navigator.clipboard.writeText(hex);
   const toast = document.getElementById('toast');
   if (toast) {
-    toast.textContent = `طھظ… ظ†ط³ط® ط§ظ„ظƒظˆط¯: ${hex}`;
+    toast.textContent = `تم نسخ الكود: ${hex}`;
     toast.classList.add('show');
     setTimeout(() => toast.classList.remove('show'), 2400);
   }

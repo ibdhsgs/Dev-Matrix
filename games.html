@@ -13,6 +13,11 @@
   
   <!-- Main Stylesheet -->
   <link rel="stylesheet" href="style.css" />
+
+  <!-- Firebase Compat CDN -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  <script src="firebase-config.js"></script>
 </head>
 <body>
 
@@ -35,8 +40,14 @@
       <li><a href="#guess-tech" class="nav-link">خمن التقنية</a></li>
       <li><a href="#matrix-game" class="nav-link">المصفوفة</a></li>
       <li><a href="#tech-memory" class="nav-link">الذاكرة</a></li>
+      <li><a href="#leaderboard" class="nav-link" style="color:var(--accent-cyan);font-weight:700;">الصدارة 🏆</a></li>
       <li><a href="#dm-facts" class="nav-link">حقائق</a></li>
       <li><a href="#tech-timeline" class="nav-link">الخط الزمني</a></li>
+      <li>
+        <button class="player-status-btn" id="playerStatusBtn" onclick="openPlayerModal()">
+          <span>👤</span> <span id="navPlayerName">تسجيل اللاعب</span>
+        </button>
+      </li>
       <li>
         <a href="index.html" class="nav-cta-btn">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -46,6 +57,56 @@
     </ul>
   </div>
 </nav>
+
+<!-- PLAYER LOGIN / GUEST IDENTITY MODAL -->
+<div class="player-modal" id="playerModal">
+  <div class="player-modal-box">
+    <div class="player-modal-header">
+      <div class="player-modal-icon">🎮</div>
+      <h3>من يخوض التحدي الآن؟</h3>
+      <p>أدخل اسمك ورقم الدخول الخاص بك الموجود في بطاقة دعوتك لحفظ نقاطك ومنافستك في لوحة الصدارة الرسمية.</p>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:18px;">
+      <label class="player-option">
+        <input type="radio" name="playerTypeRadio" id="pTypeReg" value="registered" checked onchange="togglePlayerTypeUI()" />
+        <div class="opt-content">
+          <strong>🎓 لاعب رسمي (طالب / مدعو للحفل)</strong>
+          <span>أدخل اسمك ورقم الدخول المكتوب في دعوتك</span>
+        </div>
+      </label>
+
+      <div id="registeredInputsWrap" style="padding-right:26px;">
+        <div style="margin-bottom:10px;">
+          <label style="display:block;font-size:0.82rem;color:var(--text-muted);margin-bottom:4px;">الاسم الكامل *</label>
+          <input type="text" id="playerAuthName" class="player-input" placeholder="اكتب اسمك كما هو في بطاقة الدعوة..." />
+        </div>
+        <div>
+          <label style="display:block;font-size:0.82rem;color:var(--text-muted);margin-bottom:4px;">رقم الدخول الخاص بك (الموجود في كرت الدعوة) *</label>
+          <input type="text" id="playerAuthPin" class="player-input" placeholder="مثال: 9842" style="font-family:'Space Grotesk',monospace;letter-spacing:3px;" />
+        </div>
+        <div id="playerAuthError" style="color:#EF4444;font-size:0.82rem;margin-top:6px;display:none;font-weight:600;"></div>
+      </div>
+
+      <label class="player-option">
+        <input type="radio" name="playerTypeRadio" id="pTypeGuest" value="guest" onchange="togglePlayerTypeUI()" />
+        <div class="opt-content">
+          <strong>👤 اللعب كضيف (Guest)</strong>
+          <span>لعب التحديات كضيف بدون رقم دعوة رسمي</span>
+        </div>
+      </label>
+    </div>
+
+    <div style="display:flex;gap:10px;">
+      <button class="btn-primary-dm" style="flex:1;margin:0;" id="btnPlayerLogin" onclick="confirmPlayerIdentity()">
+        التحقق وبدء اللعب 🚀
+      </button>
+      <button class="btn-secondary-dm" style="margin:0;" onclick="closePlayerModal()">
+        إغلاق
+      </button>
+    </div>
+  </div>
+</div>
 
 <!-- GAMES HERO SECTION -->
 <section class="games-hero" id="games-hero">
@@ -429,7 +490,31 @@
   </div>
 </section>
 
-<!-- 9. COMING SOON -->
+<!-- 9. LIVE LEADERBOARD (Firebase Synced) -->
+<section class="section leaderboard-section" id="leaderboard">
+  <div class="container">
+    <div class="section-label reveal">09 — Live Arena Leaderboard</div>
+    <h2 class="section-title reveal">لوحة الشرف والصدارة الحية</h2>
+    <p class="section-sub reveal">أفضل النتائج المسجلة في تحديات Dev Matrix من الطلاب والضيوف مباشرة عبر السحابة.</p>
+
+    <div class="leaderboard-card reveal">
+      <div class="leaderboard-tabs" id="lbTabs">
+        <button class="lb-tab active" onclick="switchLBFilter('all', this)">🏆 جميع الألعاب</button>
+        <button class="lb-tab" onclick="switchLBFilter('cs_quiz', this)">الكويز</button>
+        <button class="lb-tab" onclick="switchLBFilter('code_challenge', this)">تحدي الكود</button>
+        <button class="lb-tab" onclick="switchLBFilter('guess_tech', this)">خمن التقنية</button>
+        <button class="lb-tab" onclick="switchLBFilter('matrix_game', this)">المصفوفة</button>
+        <button class="lb-tab" onclick="switchLBFilter('tech_memory', this)">الذاكرة</button>
+      </div>
+
+      <div class="leaderboard-list" id="leaderboardList">
+        <div class="lb-loading">جاري جلب لوحة الصدارة من Firebase... ⚡</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 10. COMING SOON -->
 <section class="section coming-soon-section" id="coming-soon">
   <div class="container">
     <div class="coming-soon-inner reveal">
@@ -473,6 +558,9 @@
     <div class="footer-line"></div>
     <div class="footer-bottom">
       <span>Interactive Hub — Dev Matrix</span>
+      <a href="admin.html" target="_blank" style="color:var(--text-muted);text-decoration:none;font-size:0.75rem;display:inline-flex;align-items:center;gap:4px;">
+        <span>🔐</span> بوابة إدارة الحفل
+      </a>
       <span>COMPUTER SCIENCE · 2024</span>
     </div>
   </div>

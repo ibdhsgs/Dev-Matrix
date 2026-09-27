@@ -1,0 +1,890 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>بطاقة دعوة خاصة لحضور حفل الإشهار — الدفعة التاسعة | كلية الحاسبات - جامعة سيئون</title>
+  <meta name="description" content="بطاقة دعوة رسمية خاصة لحضور حفل إشهار الدفعة التاسعة - قسم علوم الحاسوب - كلية الحاسبات - جامعة سيئون" />
+
+  <!-- Google Fonts (Same as Official Website) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet" />
+
+  <!-- Firebase Compat CDN -->
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+  
+  <!-- Canvas & QR Helpers -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+
+  <!-- Firebase Config -->
+  <script src="firebase-config.js"></script>
+
+  <style>
+    /* ===================================================================
+       OFFICIAL DEV MATRIX BRAND DESIGN TOKENS (Match style.css exactly)
+    =================================================================== */
+    :root {
+      --primary-deep:  #0D2B8E;
+      --primary-blue:  #1565C0;
+      --primary-sky:   #1E88E5;
+      --primary-light: #29B6F6;
+      --accent-cyan:   #00E5FF;
+      --gold-accent:   #D97706;
+
+      --bg-white:      #FFFFFF;
+      --bg-offwhite:   #F8FAFD;
+      --bg-subtle:     #F0F4FA;
+      --bg-card:       #FFFFFF;
+
+      --text-main:     #0D1B3E;
+      --text-muted:    #5A6E8C;
+      --text-light:    #8FA3BF;
+
+      --border-light:  #E2E8F3;
+      --border-card:   #EDF2F9;
+      --border-active: #1E88E5;
+
+      --shadow-sm:     0 2px 8px rgba(13, 43, 142, 0.04);
+      --shadow-md:     0 8px 24px rgba(13, 43, 142, 0.07);
+      --shadow-lg:     0 16px 40px rgba(13, 43, 142, 0.1);
+      --shadow-glow:   0 0 32px rgba(30, 136, 229, 0.14);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'IBM Plex Sans Arabic', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background-color: var(--bg-offwhite);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 18px;
+      overflow-x: hidden;
+      position: relative;
+    }
+
+    /* Geometric Network Grid Canvas (Same as Official Hero) */
+    #gridCanvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+    }
+
+    /* Ambient Soft Radial Gradient Glows */
+    .ambient-glow-1 {
+      position: fixed;
+      width: 550px;
+      height: 550px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(41, 182, 246, 0.1) 0%, rgba(21, 101, 192, 0.04) 40%, transparent 70%);
+      top: -120px;
+      left: -120px;
+      z-index: 0;
+      pointer-events: none;
+      filter: blur(50px);
+    }
+
+    .ambient-glow-2 {
+      position: fixed;
+      width: 600px;
+      height: 600px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(0, 229, 255, 0.08) 0%, rgba(30, 136, 229, 0.04) 45%, transparent 70%);
+      bottom: -140px;
+      right: -140px;
+      z-index: 0;
+      pointer-events: none;
+      filter: blur(60px);
+    }
+
+    /* Container */
+    .invite-wrapper {
+      position: relative;
+      z-index: 10;
+      width: 100%;
+      max-width: 620px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* Luxury Invitation Card (Identity Styled) */
+    .invite-card {
+      position: relative;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-radius: 28px;
+      border: 1px solid rgba(226, 232, 243, 0.9);
+      box-shadow: 0 20px 50px rgba(13, 43, 142, 0.09), 0 0 32px rgba(41, 182, 246, 0.08);
+      padding: 44px 36px;
+      text-align: center;
+      overflow: hidden;
+      transition: transform 0.3s ease;
+    }
+
+    /* Top Identity Gradient Line */
+    .invite-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 4px;
+      background: linear-gradient(90deg, var(--primary-deep), var(--primary-blue), var(--primary-sky), var(--accent-cyan));
+    }
+
+    /* Academic Faculty Crest (No logo, No secret cohort name) */
+    .academic-seal-wrap {
+      width: 82px;
+      height: 82px;
+      margin: 0 auto 16px auto;
+      border-radius: 50%;
+      background: linear-gradient(135deg, rgba(21, 101, 192, 0.1), rgba(41, 182, 246, 0.15));
+      border: 2px solid rgba(21, 101, 192, 0.25);
+      box-shadow: 0 8px 24px rgba(21, 101, 192, 0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .seal-svg-icon {
+      width: 44px;
+      height: 44px;
+      color: var(--primary-blue);
+    }
+
+    /* Official Badge */
+    .invite-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(21, 101, 192, 0.08);
+      border: 1px solid rgba(21, 101, 192, 0.2);
+      color: var(--primary-blue);
+      padding: 6px 18px;
+      border-radius: 9999px;
+      font-size: 0.84rem;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      margin-bottom: 20px;
+    }
+
+    /* Host Details */
+    .host-intro {
+      font-size: 1.15rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .host-cohort {
+      font-size: 2.3rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, var(--primary-deep) 0%, var(--primary-blue) 50%, var(--primary-sky) 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+      margin-bottom: 6px;
+    }
+
+    .host-dept {
+      font-size: 1.12rem;
+      font-weight: 700;
+      color: var(--primary-blue);
+      margin-bottom: 2px;
+    }
+
+    .host-univ {
+      font-size: 0.96rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .divider-line {
+      width: 72px;
+      height: 3px;
+      background: linear-gradient(90deg, transparent, var(--primary-sky), transparent);
+      border-radius: 9999px;
+      margin: 18px auto;
+    }
+
+    /* Guest Plate Box */
+    .guest-name-box {
+      margin: 18px 0 22px 0;
+      padding: 18px 24px;
+      background: linear-gradient(135deg, #F0F4FA 0%, #EBF3FC 100%);
+      border: 1px solid #D6E4F6;
+      border-radius: 18px;
+      box-shadow: 0 4px 16px rgba(13, 43, 142, 0.04);
+    }
+
+    .guest-pre {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .guest-title {
+      font-size: 0.95rem;
+      color: var(--primary-sky);
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .guest-name {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--text-main);
+      line-height: 1.3;
+    }
+
+    /* Invitation Text Block */
+    .invite-text-block {
+      margin-bottom: 24px;
+      padding: 0 8px;
+    }
+
+    .invite-main-intent {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--primary-deep);
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+
+    .invite-honor-reason {
+      font-size: 1rem;
+      color: var(--text-muted);
+      line-height: 1.8;
+    }
+
+    /* Event Details Grid */
+    .event-details-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+      margin-bottom: 22px;
+      text-align: right;
+    }
+
+    .detail-card {
+      background: var(--bg-white);
+      border: 1px solid var(--border-light);
+      border-radius: 14px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 2px 8px rgba(13, 43, 142, 0.03);
+    }
+
+    .detail-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: rgba(21, 101, 192, 0.08);
+      color: var(--primary-blue);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .detail-info {
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .detail-label {
+      font-size: 0.74rem;
+      color: var(--text-muted);
+      margin-bottom: 2px;
+    }
+
+    .detail-val {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--text-main);
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+
+    /* Dedicated Games Access PIN Card */
+    .games-pin-card {
+      background: linear-gradient(135deg, rgba(21, 101, 192, 0.05), rgba(30, 136, 229, 0.12));
+      border: 1.5px solid rgba(21, 101, 192, 0.22);
+      border-radius: 18px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      text-align: center;
+      box-shadow: 0 4px 16px rgba(13, 43, 142, 0.04);
+    }
+
+    .games-pin-header {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .games-pin-icon {
+      font-size: 1.25rem;
+    }
+
+    .games-pin-title {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: var(--primary-deep);
+    }
+
+    .games-pin-code {
+      font-family: 'Space Grotesk', monospace;
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--primary-blue);
+      letter-spacing: 6px;
+      margin: 4px 0;
+      text-shadow: 0 2px 8px rgba(21, 101, 192, 0.12);
+    }
+
+    .games-pin-note {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      line-height: 1.5;
+    }
+
+    /* QR Code Box */
+    .qr-section {
+      background: var(--bg-subtle);
+      border: 1px dashed rgba(30, 136, 229, 0.35);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 24px;
+    }
+
+    .qr-container {
+      background: #FFFFFF;
+      padding: 8px;
+      border-radius: 10px;
+      border: 1px solid var(--border-light);
+      box-shadow: 0 4px 12px rgba(13, 43, 142, 0.06);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .qr-text-info {
+      text-align: right;
+      flex: 1;
+      padding-right: 14px;
+    }
+
+    .qr-code-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+
+    .qr-code-number {
+      font-family: 'Space Grotesk', monospace;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--primary-deep);
+      letter-spacing: 1px;
+    }
+
+    .qr-seat-tag {
+      display: inline-block;
+      margin-top: 6px;
+      padding: 4px 12px;
+      border-radius: 6px;
+      background: rgba(217, 119, 6, 0.1);
+      color: var(--gold-accent);
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+
+    /* RSVP Status Banner */
+    .rsvp-status-badge {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      padding: 14px 20px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 18px;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .rsvp-status-badge.confirmed {
+      display: flex;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.35);
+      color: #059669;
+    }
+
+    /* Actions Buttons */
+    .invite-actions {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+    }
+
+    .btn-rsvp-confirm {
+      width: 100%;
+      background: linear-gradient(135deg, var(--primary-deep) 0%, var(--primary-blue) 50%, var(--primary-sky) 100%);
+      color: #FFFFFF;
+      border: none;
+      padding: 15px 24px;
+      border-radius: 14px;
+      font-size: 1.08rem;
+      font-weight: 700;
+      font-family: inherit;
+      cursor: pointer;
+      box-shadow: 0 8px 24px rgba(21, 101, 192, 0.28);
+      transition: all 0.25s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn-rsvp-confirm:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 30px rgba(21, 101, 192, 0.4);
+    }
+
+    .secondary-actions-row {
+      display: flex;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .btn-secondary-action {
+      flex: 1;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border-light);
+      color: var(--text-main);
+      padding: 12px 16px;
+      border-radius: 12px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      text-decoration: none;
+    }
+
+    .btn-secondary-action:hover {
+      background: #E2E8F3;
+      border-color: var(--primary-sky);
+      color: var(--primary-blue);
+    }
+
+    /* Toast */
+    .toast-msg {
+      position: fixed;
+      bottom: 24px;
+      left: 50%;
+      transform: translateX(-50%) translateY(100px);
+      background: var(--primary-deep);
+      color: #fff;
+      padding: 12px 26px;
+      border-radius: 9999px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      box-shadow: 0 10px 30px rgba(13, 43, 142, 0.25);
+      z-index: 1000;
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      pointer-events: none;
+    }
+
+    .toast-msg.show {
+      transform: translateX(-50%) translateY(0);
+      opacity: 1;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    @media (max-width: 480px) {
+      .invite-card {
+        padding: 32px 18px;
+        border-radius: 22px;
+      }
+      .host-cohort {
+        font-size: 1.8rem;
+      }
+      .guest-name {
+        font-size: 1.8rem;
+      }
+      .event-details-grid {
+        grid-template-columns: 1fr;
+      }
+      .secondary-actions-row {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Geometric Grid Canvas & Subtle Ambient Glows -->
+  <canvas id="gridCanvas"></canvas>
+  <div class="ambient-glow-1"></div>
+  <div class="ambient-glow-2"></div>
+
+  <div class="invite-wrapper">
+    <!-- VIP INVITATION CARD -->
+    <div class="invite-card" id="printableCard">
+
+      <!-- Academic Faculty Crest Icon -->
+      <div class="academic-seal-wrap">
+        <svg class="seal-svg-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+
+      <div class="invite-badge">
+        <span>✨</span> دعوة رسمية خاصة
+      </div>
+
+      <!-- Host Official Section -->
+      <div class="host-section">
+        <p class="host-intro">تتشرف</p>
+        <h2 class="host-cohort">الدفعة التاسعة</h2>
+        <p class="host-dept">من قسم علوم الحاسوب</p>
+        <p class="host-univ">كلية الحاسبات - جامعة سيئون</p>
+      </div>
+
+      <div class="divider-line"></div>
+
+      <!-- Guest Name Plate -->
+      <div class="guest-name-box">
+        <p class="guest-pre">بدعوة الأخ / الأخت الكريمة:</p>
+        <div class="guest-title" id="cardGuestTitle">سعادة الأستاذ / الضيف الكريم</div>
+        <h1 class="guest-name" id="cardGuestName">الضيف الكريم</h1>
+      </div>
+
+      <!-- Official Invitation Purpose Text -->
+      <div class="invite-text-block">
+        <p class="invite-main-intent">
+          لحضور حفل الإشهار الخاص بالدفعة التاسعة
+        </p>
+        <p class="invite-honor-reason">
+          وذلك احتفاءً بجهودكم، وإنجازاتكم، وبداية مسيرة جديدة نحو مستقبل أكثر إشراقًا في عالم التقنية.
+        </p>
+      </div>
+
+      <!-- Event Details -->
+      <div class="event-details-grid">
+        <div class="detail-card">
+          <div class="detail-icon">📅</div>
+          <div class="detail-info">
+            <div class="detail-label">التاريخ واليوم</div>
+            <div class="detail-val" id="eventDate">الخميس، 15 أكتوبر 2026</div>
+          </div>
+        </div>
+        <div class="detail-card">
+          <div class="detail-icon">⏰</div>
+          <div class="detail-info">
+            <div class="detail-label">وقت الحفل</div>
+            <div class="detail-val" id="eventTime">الساعة 10:00 صباحاً</div>
+          </div>
+        </div>
+        <div class="detail-card">
+          <div class="detail-icon">🏛️</div>
+          <div class="detail-info">
+            <div class="detail-label">مكان الحفل</div>
+            <div class="detail-val" id="eventHall">القاعة الكبرى للمؤتمرات</div>
+          </div>
+        </div>
+        <div class="detail-card">
+          <div class="detail-icon">🎫</div>
+          <div class="detail-info">
+            <div class="detail-label">رقم المقعد</div>
+            <div class="detail-val" id="eventSeat">VIP - A01</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dedicated Games Access PIN for Ceremony -->
+      <div class="games-pin-card">
+        <div class="games-pin-header">
+          <span class="games-pin-icon">🎮</span>
+          <span class="games-pin-title">رقم الدخول الخاص بك في مركز الألعاب أثناء الحفل</span>
+        </div>
+        <div class="games-pin-code" id="guestGamePinDisplay">----</div>
+        <div class="games-pin-note">احتفظ بهذا الرقم؛ ستقوم بإدخاله مع اسمك في مركز الألعاب لمنافستك وحفظ نقاطك في لوحة الشرف</div>
+      </div>
+
+      <!-- QR & Code Info -->
+      <div class="qr-section">
+        <div class="qr-text-info">
+          <div class="qr-code-label">رمز التحقق الإلكتروني</div>
+          <div class="qr-code-number" id="inviteCodeDisplay">BATCH9-INV</div>
+          <span class="qr-seat-tag" id="seatBadge">مقعد مخصص ومحجوز</span>
+        </div>
+        <div class="qr-container" id="qrcode"></div>
+      </div>
+
+      <!-- RSVP Confirmed Banner -->
+      <div class="rsvp-status-badge" id="rsvpConfirmedBanner">
+        <span>🎉</span> تم تأكيد حضوركم الكريم بنجاح! بانتظاركم بكل فخر واعتزاز.
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="invite-actions">
+        <button class="btn-rsvp-confirm" id="rsvpBtn" onclick="confirmAttendance()">
+          <span>✨</span> تأكيد حضور الحفل (RSVP)
+        </button>
+
+        <div class="secondary-actions-row">
+          <button class="btn-secondary-action" onclick="downloadCardImage()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+            تحميل كرت الدعوة (صورة)
+          </button>
+          <button class="btn-secondary-action" onclick="shareInvite()">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+            مشاركة الدعوة
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast-msg" id="toastMsg">تم التأكيد بنجاح</div>
+
+  <script>
+    let currentGuest = null;
+    let currentGuestId = null;
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      initGridCanvas();
+      await loadInviteData();
+    });
+
+    async function loadInviteData() {
+      const urlParams = new URLSearchParams(window.location.search);
+      currentGuestId = urlParams.get('id');
+      const paramName = urlParams.get('name');
+      const paramTitle = urlParams.get('title');
+      const paramSeat = urlParams.get('seat');
+
+      if (currentGuestId && window.DevMatrixFB) {
+        currentGuest = await window.DevMatrixFB.getGuestById(currentGuestId);
+      }
+
+      if (currentGuest) {
+        applyGuestData(currentGuest);
+      } else if (paramName) {
+        applyGuestData({
+          name: decodeURIComponent(paramName),
+          title: paramTitle ? decodeURIComponent(paramTitle) : 'ضيف كريم',
+          seat: paramSeat || 'VIP-01',
+          rsvp: 'pending'
+        });
+      } else {
+        applyGuestData({
+          name: 'الأستاذ الفاضل / الضيف الكريم',
+          title: 'ضيف شرف',
+          seat: 'VIP-A1',
+          rsvp: 'pending'
+        });
+      }
+    }
+
+    function applyGuestData(g) {
+      document.getElementById('cardGuestName').textContent = g.name || 'الضيف الكريم';
+      document.getElementById('cardGuestTitle').textContent = g.title || 'ضيف الشرف';
+      if (g.seat) {
+        document.getElementById('eventSeat').textContent = g.seat;
+        document.getElementById('seatBadge').textContent = `مقعد: ${g.seat}`;
+      }
+
+      const code = g.id ? `B9-${g.id.slice(-6).toUpperCase()}` : `B9-${Math.floor(1000 + Math.random() * 9000)}`;
+      document.getElementById('inviteCodeDisplay').textContent = code;
+
+      // Games Access PIN
+      const pin = g.gamePin || (g.id ? g.id.slice(-4).toUpperCase() : `${Math.floor(1000 + Math.random() * 9000)}`);
+      document.getElementById('guestGamePinDisplay').textContent = pin;
+
+      // Update Page Title
+      document.title = `بطاقة دعوة: ${g.name} — الدفعة التاسعة | كلية الحاسبات - جامعة سيئون`;
+
+      // Generate QR Code with Deep Navy on White
+      const qrEl = document.getElementById('qrcode');
+      qrEl.innerHTML = '';
+      new QRCode(qrEl, {
+        text: window.location.href,
+        width: 76,
+        height: 76,
+        colorDark: "#0D2B8E",
+        colorLight: "#FFFFFF",
+        correctLevel: QRCode.CorrectLevel.M
+      });
+
+      if (g.rsvp === 'confirmed') {
+        markAsConfirmed();
+      }
+    }
+
+    async function confirmAttendance() {
+      const rsvpBtn = document.getElementById('rsvpBtn');
+      rsvpBtn.disabled = true;
+      rsvpBtn.innerHTML = 'جاري التأكيد... ⏳';
+
+      if (currentGuestId && window.DevMatrixFB) {
+        await window.DevMatrixFB.updateGuestRSVP(currentGuestId, 'confirmed');
+      }
+
+      setTimeout(() => {
+        markAsConfirmed();
+        showToast('تم تأكيد حضورك بنجاح! نتشرف بحضورك الكريم 🎉');
+      }, 500);
+    }
+
+    function markAsConfirmed() {
+      const rsvpBtn = document.getElementById('rsvpBtn');
+      const banner = document.getElementById('rsvpConfirmedBanner');
+      rsvpBtn.style.display = 'none';
+      banner.className = 'rsvp-status-badge confirmed';
+      banner.style.display = 'flex';
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toastMsg');
+      toast.textContent = msg;
+      toast.classList.add('show');
+      setTimeout(() => toast.classList.remove('show'), 3500);
+    }
+
+    async function downloadCardImage() {
+      showToast('جاري تجهيز بطاقة الدعوة للتحميل... ⏳');
+      const card = document.getElementById('printableCard');
+      const actions = card.querySelector('.invite-actions');
+      const originalDisplay = actions.style.display;
+      actions.style.display = 'none';
+
+      try {
+        const canvas = await html2canvas(card, {
+          scale: 2,
+          backgroundColor: '#FFFFFF',
+          useCORS: true
+        });
+        actions.style.display = originalDisplay;
+
+        const link = document.createElement('a');
+        const guestName = document.getElementById('cardGuestName').textContent.trim();
+        link.download = `دعوة_حفل_الاشهار_${guestName.replace(/\s+/g, '_')}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        showToast('تم تحميل بطاقة الدعوة بنجاح! 📥');
+      } catch (err) {
+        actions.style.display = originalDisplay;
+        console.error(err);
+        showToast('حدث خطأ أثناء تحميل الصورة.');
+      }
+    }
+
+    async function shareInvite() {
+      const guestName = document.getElementById('cardGuestName').textContent;
+      const shareData = {
+        title: `دعوة لحضور حفل إشهار الدفعة التاسعة: ${guestName}`,
+        text: `تتشرف الدفعة التاسعة - قسم علوم الحاسوب - كلية الحاسبات جامعة سيئون بدعوتكم لحضور حفل الإشهار:\n`,
+        url: window.location.href
+      };
+
+      if (navigator.share) {
+        try {
+          await navigator.share(shareData);
+        } catch (e) {}
+      } else {
+        navigator.clipboard.writeText(window.location.href).then(() => {
+          showToast('تم نسخ رابط دعوتك بنجاح! 📋');
+        });
+      }
+    }
+
+    /* Grid Canvas (Identical to Official Website Hero Grid) */
+    function initGridCanvas() {
+      const canvas = document.getElementById('gridCanvas');
+      if (!canvas) return;
+      const ctx = canvas.getContext('2d');
+
+      let width = canvas.width = window.innerWidth;
+      let height = canvas.height = window.innerHeight;
+
+      window.addEventListener('resize', () => {
+        width = canvas.width = window.innerWidth;
+        height = canvas.height = window.innerHeight;
+      });
+
+      const spacing = 45;
+      let offset = 0;
+
+      function draw() {
+        ctx.clearRect(0, 0, width, height);
+
+        // Network Grid Dots
+        for (let x = 0; x < width; x += spacing) {
+          for (let y = 0; y < height; y += spacing) {
+            ctx.beginPath();
+            ctx.arc(x, y, 1.2, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(21, 101, 192, 0.12)';
+            ctx.fill();
+          }
+        }
+
+        // Subtle diagonal tech scanlines
+        offset = (offset + 0.3) % spacing;
+        ctx.strokeStyle = 'rgba(41, 182, 246, 0.04)';
+        ctx.lineWidth = 1;
+        for (let y = offset; y < height; y += spacing * 2) {
+          ctx.beginPath();
+          ctx.moveTo(0, y);
+          ctx.lineTo(width, y);
+          ctx.stroke();
+        }
+
+        requestAnimationFrame(draw);
+      }
+
+      draw();
+    }
+  </script>
+</body>
+</html>
