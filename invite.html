@@ -725,6 +725,20 @@
           rsvp: 'pending'
         });
       }
+
+      // Load Event Settings from Cloud
+      if (window.DevMatrixFB && window.DevMatrixFB.loadEventSettingsFromCloud) {
+        try {
+          const settings = await window.DevMatrixFB.loadEventSettingsFromCloud();
+          if (settings) {
+            if (settings.date) document.getElementById('eventDate').textContent = settings.date;
+            if (settings.time) document.getElementById('eventTime').textContent = settings.time;
+            if (settings.hall) document.getElementById('eventHall').textContent = settings.hall;
+          }
+        } catch (e) {
+          console.warn("Could not fetch cloud event settings:", e);
+        }
+      }
     }
 
     function applyGuestData(g) {

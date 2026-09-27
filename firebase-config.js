@@ -259,30 +259,55 @@ async function getGuestById(id) {
   return list.find(g => g.id === id) || null;
 }
 
+let isFirestoreConnected = false;
+
 /**
- * Listen to all guests (Real-time update)
+ * Listen to all guests (Real-time update with auto-sync from local cache)
  */
-function subscribeToGuests(callback) {
+function subscribeToGuests(callback, onStatusChange) {
   if (isFirebaseReady && db) {
     try {
       return db.collection('guests').orderBy('createdAt', 'desc')
-        .onSnapshot(snapshot => {
+        .onSnapshot(async snapshot => {
+          isFirestoreConnected = true;
+          if (onStatusChange) onStatusChange({ connected: true });
+
           const guests = [];
           snapshot.forEach(doc => {
             guests.push({ id: doc.id, ...doc.data() });
           });
+
+          // Check if there are local guests created during permission denial or offline
+          const local = getLocalGuests();
+          const unsynced = local.filter(g => String(g.id).startsWith('loc_'));
+          if (unsynced.length > 0) {
+            console.log(`⚡ Syncing ${unsynced.length} unsynced local guests to Firestore cloud...`);
+            for (const ug of unsynced) {
+              const { id, fallback, ...dataToUpload } = ug;
+              await db.collection('guests').add(dataToUpload);
+            }
+            // Clear local cached fallback items now that they've been uploaded
+            setLocalGuests(guests);
+            return; // Next snapshot will trigger automatically with cloud IDs
+          }
+
           setLocalGuests(guests);
           callback(guests);
         }, err => {
           console.warn("Firestore realtime guests error:", err);
+          isFirestoreConnected = false;
+          if (onStatusChange) onStatusChange({ connected: false, error: err.code || err.message });
           callback(getLocalGuests());
         });
     } catch (e) {
       console.warn("Subscribe error:", e);
+      isFirestoreConnected = false;
+      if (onStatusChange) onStatusChange({ connected: false, error: e.message });
     }
   }
 
   callback(getLocalGuests());
+  if (onStatusChange) onStatusChange({ connected: false, error: 'Firebase not initialized' });
   return () => {};
 }
 
@@ -423,10 +448,41 @@ async function clearAllScores() {
   return { success: true };
 }
 
+/**
+ * Event Settings API (Shared across all devices via Firestore)
+ */
+async function saveEventSettingsToCloud(settings) {
+  if (isFirebaseReady && db) {
+    try {
+      await db.collection('settings').doc('event').set(settings, { merge: true });
+      return { success: true };
+    } catch (err) {
+      console.warn("Failed to save event settings to Firestore:", err);
+      return { success: false, error: err };
+    }
+  }
+  return { success: false, localOnly: true };
+}
+
+async function loadEventSettingsFromCloud() {
+  if (isFirebaseReady && db) {
+    try {
+      const doc = await db.collection('settings').doc('event').get();
+      if (doc.exists) {
+        return doc.data();
+      }
+    } catch (err) {
+      console.warn("Failed to load event settings from Firestore:", err);
+    }
+  }
+  return null;
+}
+
 // Export to window
 window.DevMatrixFB = {
   config: firebaseConfig,
   isReady: () => isFirebaseReady,
+  isConnected: () => isFirestoreConnected,
   addGuest,
   addBulkGuests,
   getGuestById,
@@ -437,6 +493,8 @@ window.DevMatrixFB = {
   saveGameScore,
   subscribeToScores,
   clearAllScores,
+  saveEventSettingsToCloud,
+  loadEventSettingsFromCloud,
   getLocalGuests,
   getLocalScores
 };

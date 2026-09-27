@@ -141,6 +141,62 @@
       color: var(--primary-deep);
     }
 
+    /* Cloud Connection Status Badge */
+    .cloud-status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      padding: 6px 14px;
+      border-radius: 9999px;
+      font-size: 0.82rem;
+      font-weight: 700;
+      border: 1px solid transparent;
+      user-select: none;
+      transition: all 0.2s;
+    }
+    .cloud-status-badge.status-connected {
+      background: rgba(16, 185, 129, 0.12);
+      color: #059669;
+      border-color: rgba(16, 185, 129, 0.35);
+    }
+    .cloud-status-badge.status-disconnected {
+      background: rgba(239, 68, 68, 0.12);
+      color: #DC2626;
+      border-color: rgba(239, 68, 68, 0.35);
+      cursor: pointer;
+    }
+    .cloud-status-badge.status-checking {
+      background: rgba(217, 119, 6, 0.12);
+      color: #D97706;
+      border-color: rgba(217, 119, 6, 0.35);
+    }
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: currentColor;
+      box-shadow: 0 0 6px currentColor;
+    }
+
+    /* Cloud Alert Banner */
+    .cloud-alert-banner {
+      background: #FEF2F2;
+      border: 1px solid #FCA5A5;
+      border-radius: 16px;
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      color: #991B1B;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      box-shadow: 0 4px 14px rgba(239, 68, 68, 0.08);
+      animation: fadeIn 0.3s ease;
+    }
+    .cloud-alert-banner.show {
+      display: flex;
+    }
+
     /* Auth Gate (PIN Modal) */
     #authGate {
       position: fixed;
@@ -719,6 +775,12 @@
       </div>
     </a>
     <div class="admin-header-actions">
+      <!-- Real-time Cloud Sync Status Badge -->
+      <div id="cloudStatusBadge" class="cloud-status-badge status-checking" onclick="showRulesModal()" title="اضغط لعرض تفاصيل الاتصال السحابي">
+        <span class="status-dot"></span>
+        <span id="cloudStatusText">جاري فحص السحابة...</span>
+      </div>
+
       <a href="games.html" class="btn-header-action" target="_blank">
         <span>🎮</span> مركز الألعاب
       </a>
@@ -733,6 +795,22 @@
 
   <!-- MAIN ADMIN CONTENT -->
   <main class="admin-container">
+
+    <!-- Cloud Sync Warning Banner (shown when Firestore rules block writes/reads) -->
+    <div id="cloudAlertBanner" class="cloud-alert-banner">
+      <div style="display:flex;align-items:flex-start;gap:12px;">
+        <span style="font-size:1.6rem;line-height:1;">⚠️</span>
+        <div>
+          <strong style="font-size:0.96rem;">تنبيه: قاعدة بيانات Firebase ترفض الإذن (قواعد الأمان Rules مغلقة)</strong>
+          <div style="font-size:0.84rem;color:#7F1D1D;margin-top:3px;line-height:1.5;">
+            البيانات حالياً تُحفظ محلياً على هذا الجهاز فقط ولن تظهر على الجوال حتى تقوم بتفعيل قواعد Firestore في لوحة تحكم Firebase Console.
+          </div>
+        </div>
+      </div>
+      <button onclick="showRulesModal()" style="background:#DC2626;color:#fff;border:none;padding:9px 18px;border-radius:10px;font-size:0.85rem;font-weight:700;cursor:pointer;white-space:nowrap;box-shadow:0 4px 12px rgba(220,38,38,0.25);">
+        طريقة التفعيل ☁️
+      </button>
+    </div>
 
     <!-- TABS -->
     <div class="admin-tabs">
@@ -1007,6 +1085,46 @@
         <button class="btn-action-secondary" onclick="closeBulkModal()">إلغاء</button>
         <button class="btn-action-primary" id="btnConfirmBulk" onclick="executeBulkImport()">
           <span>⚡</span> تأكيد واستيراد الكل إلى Firebase
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- RULES GUIDE MODAL -->
+  <div class="admin-modal" id="rulesGuideModal">
+    <div class="modal-box" style="max-width:620px;">
+      <div class="modal-head">
+        <h3 class="modal-title">☁️ تفعيل مزامنة البيانات السحابية (Firebase)</h3>
+        <button class="modal-close" onclick="closeRulesModal()">&times;</button>
+      </div>
+
+      <p style="font-size:0.9rem;color:var(--text-muted);line-height:1.6;margin-bottom:14px;">
+        لظهور البيانات على الجوال وجميع الأجهزة في نفس اللحظة، يجب السماح بقراءة وكتابة البيانات في <strong>قواعد أمان Firebase</strong>. اتبع هذه الخطوات السريعة:
+      </p>
+
+      <ol style="font-size:0.88rem;color:var(--text-main);padding-right:20px;line-height:1.9;margin-bottom:16px;">
+        <li>افتح موقع <a href="https://console.firebase.google.com/" target="_blank" style="color:var(--primary-blue);font-weight:700;text-decoration:underline;">Firebase Console</a>.</li>
+        <li>اختر مشروعك: <strong>dev-matrix-app</strong>.</li>
+        <li>من القائمة الجانبية: اختر <strong>Build</strong> ثم <strong>Firestore Database</strong>.</li>
+        <li>اضغط على تبويب <strong>Rules (القواعد)</strong> في أعلى الصفحة.</li>
+        <li>انسخ الكود أدناه واستبدل به القواعد الحالية، ثم اضغط <strong>Publish (نشر)</strong>:</li>
+      </ol>
+
+      <div style="position:relative;background:#0F172A;border-radius:12px;padding:16px;margin-bottom:18px;direction:ltr;text-align:left;">
+        <button type="button" onclick="copyRulesCode()" style="position:absolute;top:10px;right:10px;background:#1E293B;color:#38BDF8;border:1px solid #334155;border-radius:6px;padding:6px 12px;font-size:0.75rem;cursor:pointer;font-weight:600;">نسخ الكود 📋</button>
+        <pre id="rulesCodeBlock" style="color:#38BDF8;font-family:monospace;font-size:0.84rem;margin:0;overflow-x:auto;">rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /{document=**} {
+      allow read, write: if true;
+    }
+  }
+}</pre>
+      </div>
+
+      <div class="modal-foot">
+        <button class="btn-action-primary" onclick="closeRulesModal()" style="width:100%;justify-content:center;">
+          فهمت ذلك، تم نسخ الكود وسأقوم بنشره في Firebase الآن 👍
         </button>
       </div>
     </div>

@@ -58,12 +58,14 @@ document.getElementById('pinInput')?.addEventListener('keydown', (e) => {
    INITIALIZATION & DATA BINDING
 =================================================================== */
 function initAdminData() {
-  // Listen to Guests
+  // Listen to Guests with cloud status callback
   if (window.DevMatrixFB) {
     unsubscribeGuests = window.DevMatrixFB.subscribeToGuests((guests) => {
       allGuestsList = guests;
       updateStats();
       filterGuestsTable();
+    }, (status) => {
+      handleCloudStatusChange(status);
     });
 
     // Listen to Games Scores
@@ -79,6 +81,25 @@ function initAdminData() {
 
   // Setup Excel drag & drop
   setupExcelDrop();
+}
+
+function handleCloudStatusChange(status) {
+  const badge = document.getElementById('cloudStatusBadge');
+  const text = document.getElementById('cloudStatusText');
+  const banner = document.getElementById('cloudAlertBanner');
+  if (!badge || !text) return;
+
+  if (status && status.connected) {
+    badge.className = 'cloud-status-badge status-connected';
+    text.textContent = 'سحابي متصل ومُزامن ✅';
+    badge.title = 'قاعدة البيانات السحابية متصلة؛ البيانات تظهر على جميع الأجهزة والجوال فوراً';
+    if (banner) banner.classList.remove('show');
+  } else {
+    badge.className = 'cloud-status-badge status-disconnected';
+    text.textContent = 'سحابي معطل (انقر للحل) ⚠️';
+    badge.title = 'قواعد أمان Firebase ترفض الإذن. انقر لمعرفة كيفية تفعيلها بدقيقة واحدة.';
+    if (banner) banner.classList.add('show');
+  }
 }
 
 function updateStats() {
@@ -471,9 +492,9 @@ async function clearAllScoresConfirm() {
 }
 
 /* ===================================================================
-   EVENT SETTINGS
+   EVENT SETTINGS (Synced with Cloud & Local)
 =================================================================== */
-function loadSavedSettings() {
+async function loadSavedSettings() {
   const date = localStorage.getItem('devmatrix_event_date');
   const time = localStorage.getItem('devmatrix_event_time');
   const hall = localStorage.getItem('devmatrix_event_hall');
@@ -483,9 +504,31 @@ function loadSavedSettings() {
   if (time) document.getElementById('settingEventTime').value = time;
   if (hall) document.getElementById('settingEventHall').value = hall;
   if (msg) document.getElementById('settingWhatsappMsg').value = msg;
+
+  if (window.DevMatrixFB && window.DevMatrixFB.loadEventSettingsFromCloud) {
+    const cloud = await window.DevMatrixFB.loadEventSettingsFromCloud();
+    if (cloud) {
+      if (cloud.date) {
+        document.getElementById('settingEventDate').value = cloud.date;
+        localStorage.setItem('devmatrix_event_date', cloud.date);
+      }
+      if (cloud.time) {
+        document.getElementById('settingEventTime').value = cloud.time;
+        localStorage.setItem('devmatrix_event_time', cloud.time);
+      }
+      if (cloud.hall) {
+        document.getElementById('settingEventHall').value = cloud.hall;
+        localStorage.setItem('devmatrix_event_hall', cloud.hall);
+      }
+      if (cloud.whatsappMsg) {
+        document.getElementById('settingWhatsappMsg').value = cloud.whatsappMsg;
+        localStorage.setItem('devmatrix_whatsapp_msg', cloud.whatsappMsg);
+      }
+    }
+  }
 }
 
-function saveEventSettings() {
+async function saveEventSettings() {
   const date = document.getElementById('settingEventDate').value.trim();
   const time = document.getElementById('settingEventTime').value.trim();
   const hall = document.getElementById('settingEventHall').value.trim();
@@ -497,12 +540,40 @@ function saveEventSettings() {
   localStorage.setItem('devmatrix_event_hall', hall);
   localStorage.setItem('devmatrix_whatsapp_msg', msg);
 
+  if (window.DevMatrixFB && window.DevMatrixFB.saveEventSettingsToCloud) {
+    await window.DevMatrixFB.saveEventSettingsToCloud({
+      date, time, hall, whatsappMsg: msg, updatedAt: new Date().toISOString()
+    });
+  }
+
   if (newPin) {
     localStorage.setItem(PIN_STORAGE_KEY, newPin);
     alert('تم تغيير رمز أمان المدير (PIN) بنجاح!');
   }
 
-  showToast('تم حفظ الإعدادات بنجاح! 💾');
+  showToast('تم حفظ ومزامنة الإعدادات بنجاح! 💾');
+}
+
+/* ===================================================================
+   RULES MODAL HELPERS
+=================================================================== */
+function showRulesModal() {
+  const modal = document.getElementById('rulesGuideModal');
+  if (modal) modal.classList.add('open');
+}
+
+function closeRulesModal() {
+  const modal = document.getElementById('rulesGuideModal');
+  if (modal) modal.classList.remove('open');
+}
+
+function copyRulesCode() {
+  const code = document.getElementById('rulesCodeBlock').innerText;
+  navigator.clipboard.writeText(code).then(() => {
+    showToast('تم نسخ كود القواعد بنجاح! 📋');
+  }).catch(() => {
+    showToast('تم تحديد الكود، يمكنك نسخه يدوياً');
+  });
 }
 
 /* ===================================================================
