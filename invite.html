@@ -632,13 +632,6 @@
             <div class="detail-val" id="eventHall">القاعة الكبرى للمؤتمرات</div>
           </div>
         </div>
-        <div class="detail-card">
-          <div class="detail-icon">🎫</div>
-          <div class="detail-info">
-            <div class="detail-label">رقم المقعد</div>
-            <div class="detail-val" id="eventSeat">VIP - A01</div>
-          </div>
-        </div>
       </div>
 
       <!-- Dedicated Games Access PIN for Ceremony -->
@@ -656,7 +649,6 @@
         <div class="qr-text-info">
           <div class="qr-code-label">رمز التحقق الإلكتروني</div>
           <div class="qr-code-number" id="inviteCodeDisplay">BATCH9-INV</div>
-          <span class="qr-seat-tag" id="seatBadge">مقعد مخصص ومحجوز</span>
         </div>
         <div class="qr-container" id="qrcode"></div>
       </div>
@@ -744,13 +736,10 @@
     function applyGuestData(g) {
       document.getElementById('cardGuestName').textContent = g.name || 'الضيف الكريم';
       document.getElementById('cardGuestTitle').textContent = g.title || 'ضيف الشرف';
-      if (g.seat) {
-        document.getElementById('eventSeat').textContent = g.seat;
-        document.getElementById('seatBadge').textContent = `مقعد: ${g.seat}`;
-      }
 
       const code = g.id ? `B9-${g.id.slice(-6).toUpperCase()}` : `B9-${Math.floor(1000 + Math.random() * 9000)}`;
-      document.getElementById('inviteCodeDisplay').textContent = code;
+      const inviteCodeEl = document.getElementById('inviteCodeDisplay');
+      if (inviteCodeEl) inviteCodeEl.textContent = code;
 
       // Games Access PIN
       const pin = g.gamePin || (g.id ? g.id.slice(-4).toUpperCase() : `${Math.floor(1000 + Math.random() * 9000)}`);

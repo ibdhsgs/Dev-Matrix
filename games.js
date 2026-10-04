@@ -940,8 +940,10 @@ window.closePlayerModal = function() {
 
 window.togglePlayerTypeUI = function() {
   const isReg = document.getElementById('pTypeReg')?.checked;
-  const wrap = document.getElementById('registeredInputsWrap');
-  if (wrap) wrap.style.display = isReg ? 'block' : 'none';
+  const regWrap = document.getElementById('registeredInputsWrap');
+  const guestWrap = document.getElementById('guestInputsWrap');
+  if (regWrap) regWrap.style.display = isReg ? 'block' : 'none';
+  if (guestWrap) guestWrap.style.display = isReg ? 'none' : 'block';
 };
 
 window.confirmPlayerIdentity = async function() {
@@ -951,13 +953,21 @@ window.confirmPlayerIdentity = async function() {
   if (errorEl) errorEl.style.display = 'none';
 
   if (isGuest) {
-    const randomGuestId = Math.floor(100 + Math.random() * 900);
-    const playerName = `ضيف_${randomGuestId}`;
+    // Use entered name or generate a unique guest ID
+    const enteredName = (document.getElementById('guestNameInput')?.value || '').trim();
+    const randomGuestId = Math.floor(1000 + Math.random() * 9000);
+    const playerName = enteredName ? enteredName : `ضيف_${randomGuestId}`;
     localStorage.setItem(PLAYER_STORAGE_KEY, playerName);
     localStorage.setItem(PLAYER_GUEST_KEY, 'true');
     updateNavPlayerUI();
     closePlayerModal();
-    showToast(`أهلاً بك كـ ${playerName} في ساحة التحديات! 🚀`);
+    showToast(`أهلاً بك يا ${playerName} في ساحة التحديات! 🚀`);
+    // Save pending score if any
+    if (window._pendingScore) {
+      const p = window._pendingScore;
+      window._pendingScore = null;
+      recordGameScore(p.gameId, p.gameTitle, p.score, p.maxScore, p.details);
+    }
     return;
   }
 
@@ -1021,19 +1031,23 @@ window.confirmPlayerIdentity = async function() {
   updateNavPlayerUI();
   closePlayerModal();
   showToast(`تم التحقق بنجاح! أهلاً بك يا ${finalName} 🎓✨`);
+  // Save pending score if any
+  if (window._pendingScore) {
+    const p = window._pendingScore;
+    window._pendingScore = null;
+    recordGameScore(p.gameId, p.gameTitle, p.score, p.maxScore, p.details);
+  }
 };
 
 function getActivePlayer() {
   const name = localStorage.getItem(PLAYER_STORAGE_KEY);
   const isGuest = localStorage.getItem(PLAYER_GUEST_KEY) === 'true';
 
+  // If no player is set, prompt the player modal instead of auto-creating a random guest
   if (!name) {
-    const randomGuestId = Math.floor(100 + Math.random() * 900);
-    const guestName = `ضيف_${randomGuestId}`;
-    localStorage.setItem(PLAYER_STORAGE_KEY, guestName);
-    localStorage.setItem(PLAYER_GUEST_KEY, 'true');
-    updateNavPlayerUI();
-    return { name: guestName, isGuest: true };
+    // Open modal to let user pick their identity before recording
+    openPlayerModal();
+    return null; // Signal that no player is registered yet
   }
 
   return { name, isGuest };
@@ -1042,6 +1056,13 @@ function getActivePlayer() {
 // Record player score and push to Firebase
 function recordGameScore(gameId, gameTitle, score, maxScore, details) {
   const player = getActivePlayer();
+
+  if (!player) {
+    // Player modal was opened — store pending score to save after login
+    window._pendingScore = { gameId, gameTitle, score, maxScore, details };
+    showToast('سجّل نفسك أولاً لحفظ نتيجتك في لوحة الصدارة! 🎮');
+    return;
+  }
 
   if (window.DevMatrixFB) {
     window.DevMatrixFB.saveGameScore({
@@ -1083,10 +1104,21 @@ function renderLeaderboardUI() {
     ? cachedScores 
     : cachedScores.filter(s => s.gameId === activeLeaderboardFilter || s.gameId.startsWith(activeLeaderboardFilter));
 
-  // Sort by highest score / percentage
-  filtered.sort((a, b) => (b.score || 0) - (a.score || 0));
+  // Deduplicate: keep only the highest score per player+game combination
+  const deduped = [];
+  const seen = new Map();
+  for (const s of filtered) {
+    const key = `${(s.playerName || '').trim().toLowerCase()}::${s.gameId || ''}`;
+    if (!seen.has(key) || (s.score || 0) > (seen.get(key).score || 0)) {
+      seen.set(key, s);
+    }
+  }
+  seen.forEach(v => deduped.push(v));
 
-  const top10 = filtered.slice(0, 10);
+  // Sort by highest score
+  deduped.sort((a, b) => (b.score || 0) - (a.score || 0));
+
+  const top10 = deduped.slice(0, 10);
 
   if (top10.length === 0) {
     listEl.innerHTML = `
