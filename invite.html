@@ -601,10 +601,10 @@
 
       <!-- Official Invitation Purpose Text -->
       <div class="invite-text-block">
-        <p class="invite-main-intent">
+        <p class="invite-main-intent" id="inviteMainIntent">
           لحضور حفل الإشهار الخاص بالدفعة التاسعة
         </p>
-        <p class="invite-honor-reason">
+        <p class="invite-honor-reason" id="inviteHonorReason">
           وذلك احتفاءً بجهودكم، وإنجازاتكم، وبداية مسيرة جديدة نحو مستقبل أكثر إشراقًا في عالم التقنية.
         </p>
       </div>
@@ -718,14 +718,30 @@
         });
       }
 
+      // Load Event Settings (Local fallback first, then synced with Cloud)
+      try {
+        const localDate = localStorage.getItem('devmatrix_event_date');
+        const localTime = localStorage.getItem('devmatrix_event_time');
+        const localHall = localStorage.getItem('devmatrix_event_hall');
+        const localMain = localStorage.getItem('devmatrix_invite_main_text');
+        const localHonor = localStorage.getItem('devmatrix_invite_honor_text');
+        if (localDate) document.getElementById('eventDate').textContent = localDate;
+        if (localTime) document.getElementById('eventTime').textContent = localTime;
+        if (localHall) document.getElementById('eventHall').textContent = localHall;
+        if (localMain) document.getElementById('inviteMainIntent').textContent = localMain;
+        if (localHonor) document.getElementById('inviteHonorReason').textContent = localHonor;
+      } catch (e) {}
+
       // Load Event Settings from Cloud
       if (window.DevMatrixFB && window.DevMatrixFB.loadEventSettingsFromCloud) {
         try {
           const settings = await window.DevMatrixFB.loadEventSettingsFromCloud();
           if (settings) {
-            if (settings.date) document.getElementById('eventDate').textContent = settings.date;
-            if (settings.time) document.getElementById('eventTime').textContent = settings.time;
-            if (settings.hall) document.getElementById('eventHall').textContent = settings.hall;
+            if (settings.date)            document.getElementById('eventDate').textContent        = settings.date;
+            if (settings.time)            document.getElementById('eventTime').textContent        = settings.time;
+            if (settings.hall)            document.getElementById('eventHall').textContent        = settings.hall;
+            if (settings.inviteMainText)  document.getElementById('inviteMainIntent').textContent = settings.inviteMainText;
+            if (settings.inviteHonorText) document.getElementById('inviteHonorReason').textContent = settings.inviteHonorText;
           }
         } catch (e) {
           console.warn("Could not fetch cloud event settings:", e);

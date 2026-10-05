@@ -64,7 +64,7 @@
     <div class="player-modal-header">
       <div class="player-modal-icon">🎮</div>
       <h3>من يخوض التحدي الآن؟</h3>
-      <p>أدخل اسمك ورقم الدخول الخاص بك الموجود في بطاقة دعوتك لحفظ نقاطك ومنافستك في لوحة الصدارة الرسمية.</p>
+      <p>سجّل نفسك كلاعب رسمي لحفظ نقاطك ومنافستك في لوحة الصدارة الرسمية.</p>
     </div>
 
     <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:18px;">
@@ -72,7 +72,7 @@
         <input type="radio" name="playerTypeRadio" id="pTypeReg" value="registered" checked onchange="togglePlayerTypeUI()" />
         <div class="opt-content">
           <strong>🎓 لاعب رسمي (طالب / مدعو للحفل)</strong>
-          <span>أدخل اسمك ورقم الدخول المكتوب في دعوتك</span>
+          <span>سجّل باسمك ورقم الدخول من بطاقة الدعوة أو رقم هاتفك</span>
         </div>
       </label>
 
@@ -81,10 +81,30 @@
           <label style="display:block;font-size:0.82rem;color:var(--text-muted);margin-bottom:4px;">الاسم الكامل *</label>
           <input type="text" id="playerAuthName" class="player-input" placeholder="اكتب اسمك كما هو في بطاقة الدعوة..." />
         </div>
-        <div>
-          <label style="display:block;font-size:0.82rem;color:var(--text-muted);margin-bottom:4px;">رقم الدخول الخاص بك (الموجود في كرت الدعوة) *</label>
-          <input type="text" id="playerAuthPin" class="player-input" placeholder="مثال: 9842" style="font-family:'Space Grotesk',monospace;letter-spacing:3px;" />
+
+        <!-- Auth Method Toggle -->
+        <div style="margin-bottom:10px;">
+          <div style="display:flex;gap:8px;margin-bottom:8px;">
+            <button type="button" id="authMethodPinBtn" onclick="switchAuthMethod('pin')" style="flex:1;padding:8px;border-radius:8px;font-size:0.82rem;font-weight:600;cursor:pointer;border:1.5px solid var(--primary-blue);background:var(--primary-blue);color:#fff;font-family:inherit;transition:all 0.2s;">
+              🔢 برقم الدعوة (PIN)
+            </button>
+            <button type="button" id="authMethodPhoneBtn" onclick="switchAuthMethod('phone')" style="flex:1;padding:8px;border-radius:8px;font-size:0.82rem;font-weight:600;cursor:pointer;border:1.5px solid var(--border-light);background:var(--bg-subtle);color:var(--text-muted);font-family:inherit;transition:all 0.2s;">
+              📱 برقم الهاتف
+            </button>
+          </div>
+
+          <div id="authPinWrap">
+            <label style="display:block;font-size:0.82rem;color:var(--text-muted);margin-bottom:4px;">رقم الدخول (PIN) الموجود في كرت الدعوة *</label>
+            <input type="text" id="playerAuthPin" class="player-input" placeholder="مثال: 9842" style="font-family:'Space Grotesk',monospace;letter-spacing:3px;" />
+          </div>
+
+          <div id="authPhoneWrap" style="display:none;">
+            <label style="display:block;font-size:0.82rem;color:var(--text-muted);margin-bottom:4px;">رقم الهاتف الخاص بك *</label>
+            <input type="tel" id="playerAuthPhone" class="player-input" placeholder="مثال: 967777123456" style="direction:ltr;letter-spacing:1px;" />
+            <div style="font-size:0.75rem;color:var(--text-muted);margin-top:4px;">أدخل رقم الهاتف كما هو مدرج في سجل الحفل (0777... أو 967777...)</div>
+          </div>
         </div>
+
         <div id="playerAuthError" style="color:#EF4444;font-size:0.82rem;margin-top:6px;display:none;font-weight:600;"></div>
       </div>
 
@@ -92,7 +112,7 @@
         <input type="radio" name="playerTypeRadio" id="pTypeGuest" value="guest" onchange="togglePlayerTypeUI()" />
         <div class="opt-content">
           <strong>👤 اللعب كضيف (Guest)</strong>
-          <span>لعب التحديات كضيف بدون رقم دعوة رسمي</span>
+          <span>لعب التحديات بدون تسجيل — <strong style="color:var(--accent-red);بfont-size:0.88em;">لن تُحفظ النتائج في لوحة الصدارة</strong></span>
         </div>
       </label>
 
@@ -100,6 +120,9 @@
         <div>
           <label style="display:block;font-size:0.82rem;color:var(--text-muted);margin-bottom:4px;">اسم مستعار (اختياري)</label>
           <input type="text" id="guestNameInput" class="player-input" placeholder="مثال: محمد أو أبو_علي..." />
+        </div>
+        <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.25);border-radius:8px;padding:10px 12px;margin-top:8px;font-size:0.82rem;color:#B91C1C;">
+          ⚠️ اللعب كضيف لن يحفظ نتائجك في لوحة الصدارة. سجّل برقم دعوتك أو رقم هاتفك لحفظ إنجازاتك.
         </div>
       </div>
     </div>

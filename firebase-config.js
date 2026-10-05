@@ -239,6 +239,57 @@ async function verifyPlayerByPin(name, pin) {
 }
 
 /**
+ * Verify player identity with Name and Phone Number
+ */
+async function verifyPlayerByPhone(name, phone) {
+  const cleanName  = (name  || '').trim().toLowerCase();
+  const cleanPhone = String(phone || '').trim().replace(/[^0-9]/g, '');
+
+  if (!cleanPhone || cleanPhone.length < 7) {
+    return { valid: false, message: 'الرجاء إدخال رقم الهاتف الصحيح.' };
+  }
+
+  // Compare last 9 digits to handle country code variations (967..., 0...)
+  function phonesMatch(a, b) {
+    const na = String(a || '').replace(/[^0-9]/g, '');
+    const nb = String(b || '').replace(/[^0-9]/g, '');
+    if (!na || !nb) return false;
+    return na.slice(-9) === nb.slice(-9);
+  }
+
+  // 1. Check local cache first
+  const localList = getLocalGuests();
+  let match = localList.find(g => {
+    const phoneMatches = phonesMatch(g.phone, cleanPhone);
+    const nameMatches  = !cleanName || (g.name || '').toLowerCase().includes(cleanName) || cleanName.includes((g.name || '').toLowerCase());
+    return phoneMatches && nameMatches;
+  });
+  if (match) return { valid: true, guest: match };
+
+  // 2. Query Firestore if connected
+  if (isFirebaseReady && db) {
+    try {
+      const allSnap = await db.collection('guests').get();
+      for (const doc of allSnap.docs) {
+        const g = { id: doc.id, ...doc.data() };
+        if (phonesMatch(g.phone, cleanPhone)) {
+          const nameMatches = !cleanName || (g.name || '').toLowerCase().includes(cleanName) || cleanName.includes((g.name || '').toLowerCase());
+          if (nameMatches) return { valid: true, guest: g };
+        }
+      }
+    } catch (e) {
+      console.warn('Firestore phone query error:', e);
+    }
+  }
+
+  // 3. Try local by phone alone (no name check)
+  match = localList.find(g => phonesMatch(g.phone, cleanPhone));
+  if (match) return { valid: true, guest: match };
+
+  return { valid: false, message: 'رقم الهاتف غير مسجل في قائمة الحفل أو الاسم غير متطابق.' };
+}
+
+/**
  * Get single guest by Document ID
  */
 async function getGuestById(id) {
@@ -487,6 +538,7 @@ window.DevMatrixFB = {
   addBulkGuests,
   getGuestById,
   verifyPlayerByPin,
+  verifyPlayerByPhone,
   subscribeToGuests,
   updateGuestRSVP,
   deleteGuest,

@@ -231,6 +231,21 @@ async function confirmDeleteGuest(id, name) {
   }
 }
 
+async function clearAllGuestsConfirm() {
+  if (confirm('⚠️ تحذير: سيتم حذف جميع الدعوات والمدعوين من قائمة الدعوات نهائياً.\nهل أنت متأكد من هذا الإجراء؟')) {
+    if (confirm('تأكيد أخير: سيتم مسح كل الدعوات. لا يمكن التراجع!')) {
+      let count = 0;
+      if (window.DevMatrixFB) {
+        for (const g of allGuestsList) {
+          await window.DevMatrixFB.deleteGuest(g.id);
+          count++;
+        }
+      }
+      showToast(`✅ تم حذف ${count} دعوة بنجاح.`);
+    }
+  }
+}
+
 /* ===================================================================
    ADD SINGLE GUEST MODAL
 =================================================================== */
@@ -499,11 +514,19 @@ async function loadSavedSettings() {
   const time = localStorage.getItem('devmatrix_event_time');
   const hall = localStorage.getItem('devmatrix_event_hall');
   const msg = localStorage.getItem('devmatrix_whatsapp_msg');
+  const inviteMain = localStorage.getItem('devmatrix_invite_main_text');
+  const inviteHonor = localStorage.getItem('devmatrix_invite_honor_text');
 
   if (date) document.getElementById('settingEventDate').value = date;
   if (time) document.getElementById('settingEventTime').value = time;
   if (hall) document.getElementById('settingEventHall').value = hall;
   if (msg) document.getElementById('settingWhatsappMsg').value = msg;
+  if (inviteMain && document.getElementById('settingInviteMainText')) {
+    document.getElementById('settingInviteMainText').value = inviteMain;
+  }
+  if (inviteHonor && document.getElementById('settingInviteHonorText')) {
+    document.getElementById('settingInviteHonorText').value = inviteHonor;
+  }
 
   if (window.DevMatrixFB && window.DevMatrixFB.loadEventSettingsFromCloud) {
     const cloud = await window.DevMatrixFB.loadEventSettingsFromCloud();
@@ -524,8 +547,166 @@ async function loadSavedSettings() {
         document.getElementById('settingWhatsappMsg').value = cloud.whatsappMsg;
         localStorage.setItem('devmatrix_whatsapp_msg', cloud.whatsappMsg);
       }
+      if (cloud.inviteMainText && document.getElementById('settingInviteMainText')) {
+        document.getElementById('settingInviteMainText').value = cloud.inviteMainText;
+        localStorage.setItem('devmatrix_invite_main_text', cloud.inviteMainText);
+      }
+      if (cloud.inviteHonorText && document.getElementById('settingInviteHonorText')) {
+        document.getElementById('settingInviteHonorText').value = cloud.inviteHonorText;
+        localStorage.setItem('devmatrix_invite_honor_text', cloud.inviteHonorText);
+      }
     }
   }
+
+  updateMsgPreview();
+  updateInvitePreview();
+}
+
+/* ===================================================================
+   BULK WHATSAPP SENDER
+=================================================================== */
+let bwaQueue = [];       // guests to send to (with phone)
+let bwaNoPhone = [];     // guests without phone
+let bwaCurrentIndex = 0; // current position in queue
+let bwaFilter = 'all';   // 'all' | 'pending' | 'confirmed'
+
+function openBulkWaSender() {
+  if (allGuestsList.length === 0) {
+    showToast('لا يوجد مدعوون في القائمة حتى الآن!');
+    return;
+  }
+  bwaCurrentIndex = 0;
+  bwaApplyFilter();
+  document.getElementById('bulkWaModal').classList.add('open');
+}
+
+function closeBulkWaSender() {
+  document.getElementById('bulkWaModal').classList.remove('open');
+}
+
+function bwaApplyFilter() {
+  const filterEl = document.querySelector('input[name="bwaFilter"]:checked');
+  bwaFilter = filterEl ? filterEl.value : 'all';
+
+  const list = bwaFilter === 'all'
+    ? allGuestsList
+    : allGuestsList.filter(g => g.rsvp === bwaFilter);
+
+  bwaQueue   = list.filter(g => g.phone && g.phone.trim() !== '');
+  bwaNoPhone = list.filter(g => !g.phone || g.phone.trim() === '');
+
+  bwaCurrentIndex = 0;
+  bwaUpdateUI();
+}
+
+function bwaUpdateUI() {
+  const total     = bwaQueue.length;
+  const sent      = bwaCurrentIndex;
+  const remaining = Math.max(0, total - sent);
+  const noPhone   = bwaNoPhone.length;
+
+  // Update counters
+  document.getElementById('bwaTotalCount').textContent     = total + noPhone;
+  document.getElementById('bwaSentCount').textContent      = sent;
+  document.getElementById('bwaRemainingCount').textContent = remaining;
+  document.getElementById('bwaNoPhoneCount').textContent   = noPhone;
+
+  // Progress bar
+  const pct = total > 0 ? Math.round((sent / total) * 100) : 0;
+  document.getElementById('bwaProgressBar').style.width = pct + '%';
+
+  // No-phone list
+  const skipListEl   = document.getElementById('bwaSkipList');
+  const skipNamesEl  = document.getElementById('bwaSkipNames');
+  if (noPhone > 0) {
+    skipListEl.style.display = 'block';
+    skipNamesEl.textContent  = bwaNoPhone.map(g => g.name).join('، ');
+  } else {
+    skipListEl.style.display = 'none';
+  }
+
+  const doneEl = document.getElementById('bwaDoneState');
+  const cardEl = document.getElementById('bwaCurrentCard');
+  const labelEl = document.getElementById('bwaProgressLabel');
+
+  if (sent >= total && total > 0) {
+    // All sent
+    doneEl.style.display = 'block';
+    cardEl.style.display = 'none';
+    document.getElementById('bwaDoneSummary').textContent =
+      `تم إرسال ${sent} دعوة بنجاح${noPhone > 0 ? ` · ${noPhone} مدعو بلا رقم هاتف (تم تخطيهم)` : ''}`;
+    document.getElementById('bwaSendNextBtn').disabled = true;
+    document.getElementById('bwaSkipBtn').disabled     = true;
+    labelEl.textContent = '✅ اكتمل الإرسال!';
+  } else if (total === 0) {
+    doneEl.style.display = 'none';
+    cardEl.style.display = 'none';
+    labelEl.textContent  = 'لا يوجد مدعوون برقم هاتف في الفئة المختارة.';
+    document.getElementById('bwaSendNextBtn').disabled = true;
+    document.getElementById('bwaSkipBtn').disabled     = true;
+  } else {
+    // Show current guest
+    doneEl.style.display = 'none';
+    cardEl.style.display = 'block';
+    document.getElementById('bwaSendNextBtn').disabled = false;
+    document.getElementById('bwaSkipBtn').disabled     = false;
+
+    const g = bwaQueue[bwaCurrentIndex];
+    const baseUrl = window.location.origin + window.location.pathname.replace('admin.html', 'invite.html');
+    const inviteUrl = `${baseUrl}?id=${g.id}`;
+    const savedMsg = localStorage.getItem('devmatrix_whatsapp_msg') ||
+      'تتشرف الدفعة التاسعة - قسم علوم الحاسوب - كلية الحاسبات جامعة سيئون بدعوتكم لحضور حفل الإشهار. للاطلاع على بطاقة دعوتكم الخاصة والمخصصة باسمكم:';
+    const pinText = g.gamePin ? `\n\n🎮 رقم الدخول الخاص بك في مركز الألعاب أثناء الحفل: ${g.gamePin}` : '';
+    const fullMsg = `الأخ الكريم/ الأخت الكريمة: ${g.name}\n\n${savedMsg}\n\n🔗 رابط بطاقة دعوتك:\n${inviteUrl}${pinText}\n\nنتشرف بحضوركم الكريم ✨`;
+
+    document.getElementById('bwaGuestName').textContent  = `(${bwaCurrentIndex + 1}/${total}) ${g.name}`;
+    document.getElementById('bwaGuestPhone').textContent = g.phone;
+    document.getElementById('bwaMsgPreview').textContent = fullMsg;
+
+    const badge = document.getElementById('bwaStatusBadge');
+    badge.style.background = 'rgba(21,101,192,0.1)';
+    badge.style.color      = 'var(--primary-blue)';
+    badge.textContent      = '📤 قيد الإرسال';
+
+    labelEl.textContent = `${remaining} شخص متبقي من ${total}`;
+  }
+}
+
+function bwaSendNext() {
+  if (bwaCurrentIndex >= bwaQueue.length) return;
+
+  const g = bwaQueue[bwaCurrentIndex];
+  const baseUrl = window.location.origin + window.location.pathname.replace('admin.html', 'invite.html');
+  const inviteUrl = `${baseUrl}?id=${g.id}`;
+
+  const savedMsg = localStorage.getItem('devmatrix_whatsapp_msg') ||
+    'تتشرف الدفعة التاسعة - قسم علوم الحاسوب - كلية الحاسبات جامعة سيئون بدعوتكم لحضور حفل الإشهار. للاطلاع على بطاقة دعوتكم الخاصة والمخصصة باسمكم:';
+  const pinText = g.gamePin ? `\n\n🎮 رقم الدخول الخاص بك في مركز الألعاب أثناء الحفل: ${g.gamePin}` : '';
+  const fullMsg = `الأخ الكريم/ الأخت الكريمة: ${g.name}\n\n${savedMsg}\n\n🔗 رابط بطاقة دعوتك:\n${inviteUrl}${pinText}\n\nنتشرف بحضوركم الكريم ✨`;
+
+  const text = encodeURIComponent(fullMsg);
+  const cleanPhone = g.phone.replace(/[^0-9]/g, '');
+  const waUrl = `https://wa.me/${cleanPhone}?text=${text}`;
+
+  // Open WhatsApp
+  window.open(waUrl, '_blank');
+
+  // Mark as sent visually
+  const badge = document.getElementById('bwaStatusBadge');
+  badge.style.background = 'rgba(37,211,102,0.15)';
+  badge.style.color      = '#059669';
+  badge.textContent      = '✅ تم الفتح';
+
+  bwaCurrentIndex++;
+  setTimeout(() => bwaUpdateUI(), 600);
+}
+
+function bwaSkipCurrent() {
+  if (bwaCurrentIndex >= bwaQueue.length) return;
+  const g = bwaQueue[bwaCurrentIndex];
+  showToast(`تم تخطي: ${g.name}`);
+  bwaCurrentIndex++;
+  bwaUpdateUI();
 }
 
 async function saveEventSettings() {
@@ -533,25 +714,78 @@ async function saveEventSettings() {
   const time = document.getElementById('settingEventTime').value.trim();
   const hall = document.getElementById('settingEventHall').value.trim();
   const msg = document.getElementById('settingWhatsappMsg').value.trim();
+  const inviteMainText = document.getElementById('settingInviteMainText') ? document.getElementById('settingInviteMainText').value.trim() : '';
+  const inviteHonorText = document.getElementById('settingInviteHonorText') ? document.getElementById('settingInviteHonorText').value.trim() : '';
   const newPin = document.getElementById('settingNewPin').value.trim();
 
   localStorage.setItem('devmatrix_event_date', date);
   localStorage.setItem('devmatrix_event_time', time);
   localStorage.setItem('devmatrix_event_hall', hall);
   localStorage.setItem('devmatrix_whatsapp_msg', msg);
+  if (inviteMainText) localStorage.setItem('devmatrix_invite_main_text', inviteMainText);
+  if (inviteHonorText) localStorage.setItem('devmatrix_invite_honor_text', inviteHonorText);
 
   if (window.DevMatrixFB && window.DevMatrixFB.saveEventSettingsToCloud) {
     await window.DevMatrixFB.saveEventSettingsToCloud({
-      date, time, hall, whatsappMsg: msg, updatedAt: new Date().toISOString()
+      date,
+      time,
+      hall,
+      whatsappMsg: msg,
+      inviteMainText,
+      inviteHonorText,
+      updatedAt: new Date().toISOString()
     });
   }
 
   if (newPin) {
     localStorage.setItem(PIN_STORAGE_KEY, newPin);
+    document.getElementById('settingNewPin').value = '';
     alert('تم تغيير رمز أمان المدير (PIN) بنجاح!');
   }
 
   showToast('تم حفظ ومزامنة الإعدادات بنجاح! 💾');
+}
+
+// Reset WhatsApp message to default
+function resetWhatsappMsg() {
+  const defaultMsg = 'تتشرف الدفعة التاسعة - قسم علوم الحاسوب - كلية الحاسبات جامعة سيئون بدعوتكم لحضور حفل الإشهار. للاطلاع على بطاقة دعوتكم الخاصة والمخصصة باسمكم:';
+  const el = document.getElementById('settingWhatsappMsg');
+  if (el) {
+    el.value = defaultMsg;
+    updateMsgPreview();
+    showToast('تمت استعادة نص الرسالة الافتراضي 🔄');
+  }
+}
+
+// Reset Invite card texts to default
+function resetInviteTexts() {
+  const defaultMain = 'لحضور حفل الإشهار الخاص بالدفعة التاسعة';
+  const defaultHonor = 'وذلك احتفاءً بجهودكم، وإنجازاتكم، وبداية مسيرة جديدة نحو مستقبل أكثر إشراقًا في عالم التقنية.';
+  const mainEl = document.getElementById('settingInviteMainText');
+  const honorEl = document.getElementById('settingInviteHonorText');
+  if (mainEl) mainEl.value = defaultMain;
+  if (honorEl) honorEl.value = defaultHonor;
+  updateInvitePreview();
+  showToast('تمت استعادة نصوص الدعوة الافتراضية 🔄');
+}
+
+// Live preview of Invite card texts
+function updateInvitePreview() {
+  const mainInput = document.getElementById('settingInviteMainText');
+  const honorInput = document.getElementById('settingInviteHonorText');
+  const mainPrev = document.getElementById('previewInviteMainText');
+  const honorPrev = document.getElementById('previewInviteHonorText');
+  if (mainInput && mainPrev) mainPrev.textContent = mainInput.value || 'لحضور حفل الإشهار الخاص بالدفعة التاسعة';
+  if (honorInput && honorPrev) honorPrev.textContent = honorInput.value || 'وذلك احتفاءً بجهودكم، وإنجازاتكم، وبداية مسيرة جديدة نحو مستقبل أكثر إشراقًا في عالم التقنية.';
+}
+
+// Live preview of WhatsApp message
+function updateMsgPreview() {
+  const el = document.getElementById('settingWhatsappMsg');
+  const preview = document.getElementById('msgPreviewText');
+  if (el && preview) {
+    preview.textContent = el.value;
+  }
 }
 
 /* ===================================================================
@@ -597,4 +831,22 @@ function escapeHtml(str) {
 }
 
 // Check auth upon load
-document.addEventListener('DOMContentLoaded', checkAuthOnLoad);
+document.addEventListener('DOMContentLoaded', () => {
+  checkAuthOnLoad();
+
+  // Live preview update for WhatsApp message
+  const msgArea = document.getElementById('settingWhatsappMsg');
+  if (msgArea) {
+    msgArea.addEventListener('input', updateMsgPreview);
+  }
+
+  // Live preview update for Invite card texts
+  const inviteMainInput = document.getElementById('settingInviteMainText');
+  if (inviteMainInput) {
+    inviteMainInput.addEventListener('input', updateInvitePreview);
+  }
+  const inviteHonorInput = document.getElementById('settingInviteHonorText');
+  if (inviteHonorInput) {
+    inviteHonorInput.addEventListener('input', updateInvitePreview);
+  }
+});

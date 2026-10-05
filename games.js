@@ -938,6 +938,47 @@ window.closePlayerModal = function() {
   document.getElementById('playerModal')?.classList.remove('open');
 };
 
+// Switch between PIN and Phone authentication
+window.switchAuthMethod = function(method) {
+  const pinWrap   = document.getElementById('authPinWrap');
+  const phoneWrap = document.getElementById('authPhoneWrap');
+  const pinBtn    = document.getElementById('authMethodPinBtn');
+  const phoneBtn  = document.getElementById('authMethodPhoneBtn');
+  
+  if (method === 'pin') {
+    if (pinWrap)   pinWrap.style.display   = 'block';
+    if (phoneWrap) phoneWrap.style.display = 'none';
+    if (pinBtn) {
+      pinBtn.style.background   = 'var(--primary-blue)';
+      pinBtn.style.color        = '#fff';
+      pinBtn.style.borderColor  = 'var(--primary-blue)';
+    }
+    if (phoneBtn) {
+      phoneBtn.style.background  = 'var(--bg-subtle)';
+      phoneBtn.style.color       = 'var(--text-muted)';
+      phoneBtn.style.borderColor = 'var(--border-light)';
+    }
+  } else {
+    if (pinWrap)   pinWrap.style.display   = 'none';
+    if (phoneWrap) phoneWrap.style.display = 'block';
+    if (phoneBtn) {
+      phoneBtn.style.background  = 'var(--primary-blue)';
+      phoneBtn.style.color       = '#fff';
+      phoneBtn.style.borderColor = 'var(--primary-blue)';
+    }
+    if (pinBtn) {
+      pinBtn.style.background  = 'var(--bg-subtle)';
+      pinBtn.style.color       = 'var(--text-muted)';
+      pinBtn.style.borderColor = 'var(--border-light)';
+    }
+  }
+  // Store current method
+  window._authMethod = method;
+};
+
+// Initialize default auth method
+window._authMethod = 'pin';
+
 window.togglePlayerTypeUI = function() {
   const isReg = document.getElementById('pTypeReg')?.checked;
   const regWrap = document.getElementById('registeredInputsWrap');
@@ -953,7 +994,7 @@ window.confirmPlayerIdentity = async function() {
   if (errorEl) errorEl.style.display = 'none';
 
   if (isGuest) {
-    // Use entered name or generate a unique guest ID
+    // Guest mode — no score saving
     const enteredName = (document.getElementById('guestNameInput')?.value || '').trim();
     const randomGuestId = Math.floor(1000 + Math.random() * 9000);
     const playerName = enteredName ? enteredName : `ضيف_${randomGuestId}`;
@@ -961,81 +1002,118 @@ window.confirmPlayerIdentity = async function() {
     localStorage.setItem(PLAYER_GUEST_KEY, 'true');
     updateNavPlayerUI();
     closePlayerModal();
-    showToast(`أهلاً بك يا ${playerName} في ساحة التحديات! 🚀`);
-    // Save pending score if any
-    if (window._pendingScore) {
-      const p = window._pendingScore;
-      window._pendingScore = null;
-      recordGameScore(p.gameId, p.gameTitle, p.score, p.maxScore, p.details);
-    }
+    showToast(`أهلاً بك يا ${playerName} — نتائجك لن تُحفظ في لوحة الصدارة 👤`);
+    // Do NOT save pending scores for guests
+    window._pendingScore = null;
     return;
   }
 
   // Official Registered Player verification
   const name = document.getElementById('playerAuthName')?.value.trim();
-  const pin = document.getElementById('playerAuthPin')?.value.trim();
+  const authMethod = window._authMethod || 'pin';
 
   if (!name) {
     if (errorEl) {
-      errorEl.textContent = 'الرجاء كتابة اسمك الكامل كما هو في بطاقة الدعوة.';
+      errorEl.textContent = 'الرجاء كتابة اسمك الكامل.';
       errorEl.style.display = 'block';
     }
     return;
   }
 
-  if (!pin) {
-    if (errorEl) {
-      errorEl.textContent = 'الرجاء إدخال رقم الدخول الخاص بك (الموجود في كرت دعوتك).';
-      errorEl.style.display = 'block';
-    }
-    return;
-  }
-
-  if (btn) {
-    btn.disabled = true;
-    btn.textContent = 'جاري التحقق... ⏳';
-  }
-
-  let verified = false;
-  let finalName = name;
-
-  if (window.DevMatrixFB) {
-    const res = await window.DevMatrixFB.verifyPlayerByPin(name, pin);
-    if (res.valid) {
-      verified = true;
-      finalName = res.guest.name || name;
-    } else {
+  if (authMethod === 'pin') {
+    const pin = document.getElementById('playerAuthPin')?.value.trim();
+    if (!pin) {
       if (errorEl) {
-        errorEl.textContent = res.message || 'رقم الدخول أو الاسم غير متطابق. تأكد من الرقم المكتوب في كرت دعوتك.';
+        errorEl.textContent = 'الرجاء إدخال رقم الدخول (PIN) الموجود في كرت دعوتك.';
         errorEl.style.display = 'block';
-      }
-      if (btn) {
-        btn.disabled = false;
-        btn.textContent = 'التحقق وبدء اللعب 🚀';
       }
       return;
     }
+
+    if (btn) { btn.disabled = true; btn.textContent = 'جاري التحقق... ⏳'; }
+
+    let verified = false;
+    let finalName = name;
+
+    if (window.DevMatrixFB) {
+      const res = await window.DevMatrixFB.verifyPlayerByPin(name, pin);
+      if (res.valid) {
+        verified = true;
+        finalName = res.guest.name || name;
+      } else {
+        if (errorEl) {
+          errorEl.textContent = res.message || 'رقم الدخول أو الاسم غير متطابق. تأكد من الرقم المكتوب في كرت دعوتك.';
+          errorEl.style.display = 'block';
+        }
+        if (btn) { btn.disabled = false; btn.textContent = 'التحقق وبدء اللعب 🚀'; }
+        return;
+      }
+    } else {
+      verified = true; // offline fallback
+    }
+
+    if (btn) { btn.disabled = false; btn.textContent = 'التحقق وبدء اللعب 🚀'; }
+
+    localStorage.setItem(PLAYER_STORAGE_KEY, finalName);
+    localStorage.setItem(PLAYER_GUEST_KEY, 'false');
+    localStorage.setItem('devmatrix_player_pin', pin);
+
+    updateNavPlayerUI();
+    closePlayerModal();
+    showToast(`تم التحقق بنجاح! أهلاً بك يا ${finalName} 🎓✨`);
+    if (window._pendingScore) {
+      const p = window._pendingScore;
+      window._pendingScore = null;
+      recordGameScore(p.gameId, p.gameTitle, p.score, p.maxScore, p.details);
+    }
+
   } else {
-    verified = true;
-  }
+    // Phone-based verification
+    const phone = document.getElementById('playerAuthPhone')?.value.trim().replace(/[^0-9]/g, '');
+    if (!phone || phone.length < 7) {
+      if (errorEl) {
+        errorEl.textContent = 'الرجاء إدخال رقم الهاتف الصحيح.';
+        errorEl.style.display = 'block';
+      }
+      return;
+    }
 
-  if (btn) {
-    btn.disabled = false;
-    btn.textContent = 'التحقق وبدء اللعب 🚀';
-  }
+    if (btn) { btn.disabled = true; btn.textContent = 'جاري التحقق... ⏳'; }
 
-  localStorage.setItem(PLAYER_STORAGE_KEY, finalName);
-  localStorage.setItem(PLAYER_GUEST_KEY, 'false');
-  localStorage.setItem('devmatrix_player_pin', pin);
+    let finalName = name;
+    let verified = false;
 
-  updateNavPlayerUI();
-  closePlayerModal();
-  showToast(`تم التحقق بنجاح! أهلاً بك يا ${finalName} 🎓✨`);
-  // Save pending score if any
-  if (window._pendingScore) {
-    const p = window._pendingScore;
-    window._pendingScore = null;
-    recordGameScore(p.gameId, p.gameTitle, p.score, p.maxScore, p.details);
+    if (window.DevMatrixFB) {
+      const res = await window.DevMatrixFB.verifyPlayerByPhone(name, phone);
+      if (res.valid) {
+        verified = true;
+        finalName = res.guest.name || name;
+      } else {
+        if (errorEl) {
+          errorEl.textContent = res.message || 'رقم الهاتف أو الاسم غير مسجل في قائمة الحفل. تأكد من رقم هاتفك المسجّل.';
+          errorEl.style.display = 'block';
+        }
+        if (btn) { btn.disabled = false; btn.textContent = 'التحقق وبدء اللعب 🚀'; }
+        return;
+      }
+    } else {
+      verified = true;
+    }
+
+    if (btn) { btn.disabled = false; btn.textContent = 'التحقق وبدء اللعب 🚀'; }
+
+    localStorage.setItem(PLAYER_STORAGE_KEY, finalName);
+    localStorage.setItem(PLAYER_GUEST_KEY, 'false');
+    localStorage.setItem('devmatrix_player_phone', phone);
+
+    updateNavPlayerUI();
+    closePlayerModal();
+    showToast(`تم التحقق بنجاح! أهلاً بك يا ${finalName} 🎓✨`);
+    if (window._pendingScore) {
+      const p = window._pendingScore;
+      window._pendingScore = null;
+      recordGameScore(p.gameId, p.gameTitle, p.score, p.maxScore, p.details);
+    }
   }
 };
 
@@ -1061,6 +1139,12 @@ function recordGameScore(gameId, gameTitle, score, maxScore, details) {
     // Player modal was opened — store pending score to save after login
     window._pendingScore = { gameId, gameTitle, score, maxScore, details };
     showToast('سجّل نفسك أولاً لحفظ نتيجتك في لوحة الصدارة! 🎮');
+    return;
+  }
+
+  // Block guest scores from being saved
+  if (player.isGuest) {
+    showToast(`ℹ️ لعبت كضيف — سجّل برقم دعوتك أو هاتفك لحفظ نتائجك في لوحة الصدارة 🎓`);
     return;
   }
 

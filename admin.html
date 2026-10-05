@@ -749,6 +749,128 @@
     .hidden {
       display: none !important;
     }
+
+    /* ===== BULK WHATSAPP SENDER STYLES ===== */
+    .bulk-wa-progress-bar-wrap {
+      width: 100%;
+      height: 10px;
+      background: var(--border-light);
+      border-radius: 9999px;
+      overflow: hidden;
+      margin: 12px 0;
+    }
+    .bulk-wa-progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #25D366, #128C7E);
+      border-radius: 9999px;
+      transition: width 0.4s ease;
+    }
+    .bulk-wa-guest-card {
+      background: var(--bg-subtle);
+      border: 1.5px solid var(--border-light);
+      border-radius: 14px;
+      padding: 16px 18px;
+      margin: 14px 0;
+      position: relative;
+      transition: border-color 0.2s;
+    }
+    .bulk-wa-guest-card.sent {
+      border-color: rgba(37,211,102,0.5);
+      background: rgba(37,211,102,0.04);
+    }
+    .bulk-wa-guest-card.no-phone {
+      border-color: rgba(239,68,68,0.35);
+      background: rgba(239,68,68,0.04);
+    }
+    .bulk-wa-guest-name {
+      font-size: 1.05rem;
+      font-weight: 700;
+      color: var(--primary-deep);
+      margin-bottom: 3px;
+    }
+    .bulk-wa-guest-phone {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      font-family: 'Space Grotesk', monospace;
+      direction: ltr;
+      display: inline-block;
+    }
+    .bulk-wa-msg-preview {
+      background: #fff;
+      border: 1px solid var(--border-card);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 0.82rem;
+      color: var(--text-main);
+      line-height: 1.6;
+      margin-top: 10px;
+      max-height: 90px;
+      overflow-y: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+    .bulk-wa-status-badge {
+      position: absolute;
+      top: 12px;
+      left: 14px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 9999px;
+    }
+    .bulk-wa-stats {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 4px;
+    }
+    .bulk-wa-stat {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+    .bulk-wa-stat strong {
+      color: var(--primary-deep);
+      font-size: 1.05rem;
+    }
+    .btn-wa-send {
+      background: linear-gradient(135deg, #25D366 0%, #128C7E 100%);
+      color: #fff;
+      border: none;
+      padding: 13px 24px;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 700;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 16px rgba(37,211,102,0.3);
+      font-family: inherit;
+    }
+    .btn-wa-send:hover {
+      box-shadow: 0 8px 24px rgba(37,211,102,0.45);
+      transform: translateY(-2px);
+    }
+    .btn-wa-send:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+    .bulk-wa-skip-list {
+      background: rgba(239,68,68,0.06);
+      border: 1px solid rgba(239,68,68,0.2);
+      border-radius: 10px;
+      padding: 10px 14px;
+      font-size: 0.82rem;
+      color: #B91C1C;
+      margin-top: 10px;
+      display: none;
+    }
   </style>
 </head>
 <body>
@@ -875,6 +997,9 @@
           <button class="btn-action-primary" onclick="openAddGuestModal()">
             <span>➕</span> إضافة دعوة جديدة
           </button>
+          <button class="btn-action-secondary" style="background:linear-gradient(135deg,rgba(37,211,102,0.12),rgba(18,140,126,0.1));border-color:rgba(37,211,102,0.45);color:#128C7E;font-weight:700;" onclick="openBulkWaSender()">
+            <span>💬</span> إرسال دعوات واتساب للكل
+          </button>
           <button class="btn-action-secondary" onclick="triggerExcelUpload()">
             <span>📊</span> رفع ملف Excel / CSV
           </button>
@@ -883,6 +1008,9 @@
           </button>
           <button class="btn-action-secondary" onclick="exportGuestsToExcel()">
             <span>📤</span> تصدير القائمة
+          </button>
+          <button class="btn-action-secondary" style="color:var(--accent-red);border-color:rgba(239,68,68,0.4);" onclick="clearAllGuestsConfirm()">
+            <span>🗑️</span> مسح كل الدعوات
           </button>
         </div>
       </div>
@@ -969,39 +1097,100 @@
 
     <!-- TAB 3: EVENT SETTINGS -->
     <section id="eventTab" class="hidden">
-      <div class="toolbar-card" style="max-width:720px;margin:0 auto;">
-        <div style="width:100%;">
-          <h3 style="margin-bottom:16px;color:var(--primary-deep);">⚙️ إعدادات الحفل ورسائل الواتساب</h3>
+      <div style="max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:20px;">
 
-          <div class="form-group">
-            <label class="form-label">تاريخ الحفل</label>
-            <input type="text" id="settingEventDate" class="form-input" value="الخميس، 15 أكتوبر 2026" />
+        <!-- Event Details Card -->
+        <div class="toolbar-card">
+          <div style="width:100%;">
+            <h3 style="margin-bottom:4px;color:var(--primary-deep);">📅 تفاصيل الحفل</h3>
+            <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:18px;">هذه المعلومات تظهر تلقائياً في بطاقات دعوة جميع المدعوين.</p>
+
+            <div class="form-group">
+              <label class="form-label">تاريخ الحفل</label>
+              <input type="text" id="settingEventDate" class="form-input" value="الخميس، 15 أكتوبر 2026" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">وقت الحفل</label>
+              <input type="text" id="settingEventTime" class="form-input" value="الساعة 10:00 صباحاً" />
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">مكان الحفل (القاعة)</label>
+              <input type="text" id="settingEventHall" class="form-input" value="القاعة الكبرى للمؤتمرات والاحتفالات" />
+            </div>
           </div>
-
-          <div class="form-group">
-            <label class="form-label">وقت الحفل</label>
-            <input type="text" id="settingEventTime" class="form-input" value="الساعة 10:00 صباحاً" />
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">مكان الحفل (القاعة)</label>
-            <input type="text" id="settingEventHall" class="form-input" value="القاعة الكبرى للمؤتمرات والاحتفالات" />
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">نص رسالة الواتساب الترحيبية عند إرسال الدعوة</label>
-            <textarea id="settingWhatsappMsg" class="form-input" rows="4" style="resize:vertical;">تتشرف الدفعة التاسعة - قسم علوم الحاسوب - كلية الحاسبات جامعة سيئون بدعوتكم لحضور حفل الإشهار. للاطلاع على بطاقة دعوتكم الخاصة والمخصصة باسمكم:</textarea>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label">تغيير رمز PIN لدخول المدير</label>
-            <input type="password" id="settingNewPin" class="form-input" placeholder="اتركه فارغاً لعدم التغيير" />
-          </div>
-
-          <button class="btn-action-primary" style="margin-top:12px;width:100%;justify-content:center;" onclick="saveEventSettings()">
-            <span>💾</span> حفظ الإعدادات
-          </button>
         </div>
+
+        <!-- WhatsApp Message Card -->
+        <div class="toolbar-card">
+          <div style="width:100%;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+              <h3 style="color:var(--primary-deep);">💬 نص رسالة الدعوة (واتساب)</h3>
+              <button onclick="resetWhatsappMsg()" style="background:rgba(217,119,6,0.1);border:1px solid rgba(217,119,6,0.3);color:var(--accent-gold);padding:6px 12px;border-radius:8px;font-size:0.8rem;font-weight:600;cursor:pointer;">🔄 استعادة الافتراضي</button>
+            </div>
+            <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;">يُضاف هذا النص تلقائياً لرسائل واتساب الدعوات. يمكنك تعديله بحرية كاملة.</p>
+
+            <div class="form-group" style="margin-bottom:8px;">
+              <label class="form-label">نص الرسالة الترحيبية</label>
+              <textarea id="settingWhatsappMsg" class="form-input" rows="6" style="resize:vertical;font-size:0.95rem;line-height:1.7;border:2px solid var(--border-active);background:#FAFCFF;">تتشرف الدفعة التاسعة - قسم علوم الحاسوب - كلية الحاسبات جامعة سيئون بدعوتكم لحضور حفل الإشهار. للاطلاع على بطاقة دعوتكم الخاصة والمخصصة باسمكم:</textarea>
+            </div>
+            <div style="background:rgba(21,101,192,0.04);border:1px solid var(--border-card);border-radius:10px;padding:12px 14px;font-size:0.82rem;color:var(--text-muted);line-height:1.6;">
+              <strong style="color:var(--primary-blue);">📌 معاينة الرسالة الكاملة:</strong><br/>
+              الأخ الكريم/ الأخت الكريمة: <em>[اسم المدعو]</em><br/>
+              <span id="msgPreviewText"></span><br/>
+              🔗 رابط بطاقة دعوتك:<br/>
+              [رابط الدعوة الشخصي]<br/>
+              🎮 رقم الدخول في مركز الألعاب: [PIN]<br/>
+              نتشرف بحضوركم الكريم ✨
+            </div>
+          </div>
+        </div>
+
+        <!-- Invitation Card Text Settings (invite.html content) -->
+        <div class="toolbar-card">
+          <div style="width:100%;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;flex-wrap:wrap;gap:8px;">
+              <h3 style="color:var(--primary-deep);">📜 نصوص بطاقة الدعوة الإلكترونية (عبر الرابط)</h3>
+              <button type="button" onclick="resetInviteTexts()" style="background:rgba(217,119,6,0.1);border:1px solid rgba(217,119,6,0.3);color:var(--accent-gold);padding:6px 12px;border-radius:8px;font-size:0.8rem;font-weight:600;cursor:pointer;">🔄 استعادة الافتراضي</button>
+            </div>
+            <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;">هذه النصوص تظهر مباشرة في صفحة الدعوة المخصصة عند فتح الرابط من قبل الضيف.</p>
+
+            <div class="form-group" style="margin-bottom:12px;">
+              <label class="form-label">نص الدعوة الرئيسي (الغرض من الحفل)</label>
+              <input type="text" id="settingInviteMainText" class="form-input" value="لحضور حفل الإشهار الخاص بالدفعة التاسعة" placeholder="مثال: لحضور حفل الإشهار الخاص بالدفعة التاسعة" />
+            </div>
+
+            <div class="form-group" style="margin-bottom:12px;">
+              <label class="form-label">نص الاحتفاء والتكريم (الذي يظهر في بطاقة الدعوة)</label>
+              <textarea id="settingInviteHonorText" class="form-input" rows="3" style="resize:vertical;font-size:0.92rem;line-height:1.6;border:2px solid var(--border-active);background:#FAFCFF;">وذلك احتفاءً بجهودكم، وإنجازاتكم، وبداية مسيرة جديدة نحو مستقبل أكثر إشراقًا في عالم التقنية.</textarea>
+            </div>
+
+            <div style="background:rgba(13,43,142,0.04);border:1px solid rgba(13,43,142,0.15);border-radius:10px;padding:12px 14px;font-size:0.82rem;line-height:1.6;">
+              <strong style="color:var(--primary-deep);">👁️ معاينة شكل النص في بطاقة الدعوة:</strong>
+              <div style="margin-top:8px;padding:14px;background:#ffffff;border-radius:8px;border:1px dashed var(--border-card);text-align:center;">
+                <p id="previewInviteMainText" style="color:var(--primary-blue);font-weight:700;margin-bottom:6px;font-size:0.95rem;">لحضور حفل الإشهار الخاص بالدفعة التاسعة</p>
+                <p id="previewInviteHonorText" style="color:var(--text-muted);font-size:0.85rem;line-height:1.6;margin:0;">وذلك احتفاءً بجهودكم، وإنجازاتكم، وبداية مسيرة جديدة نحو مستقبل أكثر إشراقًا في عالم التقنية.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Security Card -->
+        <div class="toolbar-card">
+          <div style="width:100%;">
+            <h3 style="margin-bottom:4px;color:var(--primary-deep);">🔐 أمان لوحة التحكم</h3>
+            <p style="font-size:0.82rem;color:var(--text-muted);margin-bottom:14px;">تغيير رمز دخول المدير لهذه اللوحة.</p>
+            <div class="form-group">
+              <label class="form-label">رمز PIN الجديد لدخول المدير</label>
+              <input type="password" id="settingNewPin" class="form-input" placeholder="اتركه فارغاً لعدم التغيير" />
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-action-primary" style="width:100%;justify-content:center;padding:14px;font-size:1rem;" onclick="saveEventSettings()">
+          <span>💾</span> حفظ جميع الإعدادات
+        </button>
       </div>
     </section>
 
@@ -1131,6 +1320,85 @@ service cloud.firestore {
   </div>
 
   <div class="admin-toast" id="adminToast">تم الحفظ بنجاح</div>
+
+  <!-- ===== BULK WHATSAPP SENDER MODAL ===== -->
+  <div class="admin-modal" id="bulkWaModal">
+    <div class="modal-box" style="max-width:620px;">
+
+      <!-- Header -->
+      <div class="modal-head">
+        <h3 class="modal-title">💬 إرسال دعوات واتساب للكل</h3>
+        <button class="modal-close" onclick="closeBulkWaSender()">×</button>
+      </div>
+
+      <!-- Stats Bar -->
+      <div class="bulk-wa-stats" id="bulkWaStats">
+        <div class="bulk-wa-stat">👥 الإجمالي: <strong id="bwaTotalCount">0</strong></div>
+        <div class="bulk-wa-stat" style="color:#128C7E;">✅ مُرسَل: <strong id="bwaSentCount" style="color:#128C7E;">0</strong></div>
+        <div class="bulk-wa-stat" style="color:#D97706;">⏳ المتبقي: <strong id="bwaRemainingCount" style="color:#D97706;">0</strong></div>
+        <div class="bulk-wa-stat" style="color:#EF4444;">🚫 بلا هاتف: <strong id="bwaNoPhoneCount" style="color:#EF4444;">0</strong></div>
+      </div>
+
+      <!-- Progress Bar -->
+      <div class="bulk-wa-progress-bar-wrap">
+        <div class="bulk-wa-progress-bar-fill" id="bwaProgressBar" style="width:0%"></div>
+      </div>
+      <div style="font-size:0.8rem;color:var(--text-muted);text-align:center;margin-bottom:12px;" id="bwaProgressLabel">اضغط "إرسال التالي" للبدء</div>
+
+      <!-- Current Guest Card -->
+      <div id="bwaCurrentCard" class="bulk-wa-guest-card" style="display:none;">
+        <div class="bulk-wa-status-badge" id="bwaStatusBadge" style="background:rgba(21,101,192,0.1);color:var(--primary-blue);">📤 قيد الإرسال</div>
+        <div class="bulk-wa-guest-name" id="bwaGuestName">—</div>
+        <div class="bulk-wa-guest-phone" id="bwaGuestPhone">—</div>
+        <div class="bulk-wa-msg-preview" id="bwaMsgPreview"></div>
+      </div>
+
+      <!-- No phone guests list -->
+      <div class="bulk-wa-skip-list" id="bwaSkipList">
+        <strong>🚫 المدعوون التالون بلا رقم هاتف (سيتم تخطيهم):</strong>
+        <div id="bwaSkipNames" style="margin-top:4px;"></div>
+      </div>
+
+      <!-- Done State -->
+      <div id="bwaDoneState" style="display:none;text-align:center;padding:20px 0;">
+        <div style="font-size:2.5rem;margin-bottom:8px;">🎉</div>
+        <div style="font-size:1.15rem;font-weight:800;color:var(--primary-deep);margin-bottom:4px;">تم إرسال جميع الدعوات!</div>
+        <div style="font-size:0.88rem;color:var(--text-muted);" id="bwaDoneSummary"></div>
+      </div>
+
+      <!-- Filters -->
+      <div style="display:flex;gap:8px;align-items:center;margin:14px 0 4px 0;flex-wrap:wrap;">
+        <span style="font-size:0.82rem;color:var(--text-muted);font-weight:600;">إرسال لـ:</span>
+        <label style="display:flex;align-items:center;gap:5px;font-size:0.84rem;cursor:pointer;">
+          <input type="radio" name="bwaFilter" value="all" checked onchange="bwaApplyFilter()" /> الكل
+        </label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:0.84rem;cursor:pointer;">
+          <input type="radio" name="bwaFilter" value="pending" onchange="bwaApplyFilter()" /> بانتظار التأكيد فقط
+        </label>
+        <label style="display:flex;align-items:center;gap:5px;font-size:0.84rem;cursor:pointer;">
+          <input type="radio" name="bwaFilter" value="confirmed" onchange="bwaApplyFilter()" /> المؤكدين فقط
+        </label>
+      </div>
+
+      <!-- Action Buttons -->
+      <div style="display:flex;gap:10px;margin-top:16px;flex-wrap:wrap;">
+        <button class="btn-wa-send" id="bwaSendNextBtn" onclick="bwaSendNext()" style="flex:1;justify-content:center;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347z"/><path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 16.994c-.277.78-1.369 1.498-2.167 1.689-.578.138-1.332.248-3.871-.831-3.241-1.376-5.332-4.666-5.491-4.881-.149-.199-1.29-1.718-1.29-3.275 0-1.558.818-2.322 1.107-2.641.277-.307.605-.384.806-.384l.578.011c.185.009.436-.07.681.52.257.617.876 2.113.953 2.267.077.155.128.335.026.539-.102.204-.153.33-.305.508-.153.178-.32.397-.457.533-.153.152-.312.317-.134.622.178.305.791 1.304 1.698 2.112.926.83 1.706 1.088 2.011 1.21.305.124.482.103.66-.062.178-.164.763-.893.967-1.199.203-.305.406-.255.68-.153.275.101 1.745.823 2.045.973.3.15.498.224.573.348.074.124.074.718-.204 1.5z"/></svg>
+          إرسال للتالي
+        </button>
+        <button class="btn-action-secondary" id="bwaSkipBtn" onclick="bwaSkipCurrent()" style="min-width:100px;">
+          تخطي ⏭
+        </button>
+        <button class="btn-action-secondary" onclick="closeBulkWaSender()" style="min-width:80px;">
+          إغلاق
+        </button>
+      </div>
+
+      <div style="font-size:0.78rem;color:var(--text-muted);margin-top:10px;text-align:center;line-height:1.5;">
+        ⚡ سيفتح واتساب تلقائياً بعد كل ضغطة. انتظر انفتاح المحادثة ثم اضغط "إرسال للتالي" للانتقال للشخص التالي.
+      </div>
+    </div>
+  </div>
 
   <script src="admin.js"></script>
 </body>
